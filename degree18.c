@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
 	mpz_t tmp,mod;
 	mpz_init(tmp);
 	mpz_init(mod);
-	int i,j,k,l;
+	int j,k,l;
 	mpz_set_ui(mod,3);
 
 	for(;;){
@@ -102,11 +102,11 @@ int main(int argc, char *argv[]){
 				k=mpz_get_ui(tmp);
 
 				j=mpz_probab_prime_p(p_tmp,25);
-				mpz_sub_ui(tmp,p_tmp,1);
+				mpz_add_ui(tmp,p_tmp,1);
 				mpz_tdiv_r_ui(tmp,tmp,4);
 				l=mpz_get_ui(tmp);
 				// i=mpz_probab_prime_p(r_tmp,25);
-				if(k==0&&j!=0&&l!=0){
+				if(k==0&&j!=0&&l==0){
 					gmp_printf("%Zd\n",X);
 					gmp_printf("p:%Zd\n",p_tmp);
 					printf("p = %dbit\n",(int)mpz_sizeinbase(p_tmp,2));
