@@ -3,10 +3,9 @@ double opt_sum=0,sparse_sum=0,pseudo_sum=0;
 double opt_dbl=0,opt_add=0,opt_mul=0;
 double sps_dbl=0,sps_add=0,sps_mul=0;
 double pse_dbl=0,pse_add=0,pse_mul=0;
-#define x_bit 64
-#define c1 2
-char loop[x_bit+1];
-// char loop[65];
+#define x_bit 44
+#define c1 3
+char x_bit_length[x_bit+1];
 
 
 int main(void){
@@ -18,36 +17,38 @@ int main(void){
 	mpz_init(b);
 
 
+
 	//set generater X
 
 	//c=3
-	// mpz_set_str(X,"17592190238210",10);//348bit
-	// loop[44]=1;
-	// loop[22]=1;
-	// loop[9]=-1;
-	// loop[1]=1;
+	mpz_set_str(X,"17592190238210",10);//348bit
+	x_bit_length[44]=1;
+	x_bit_length[22]=1;
+	x_bit_length[9]=-1;
+	x_bit_length[1]=1;
+
 	//c=2
 	// mpz_set_str(X,"661934",10);
-	// loop[19]=1;
-	// loop[17]=1;
-	// loop[12]=1;
-	// loop[11]=1;
-	// loop[8]=1;
-	// loop[7]=1;
-	// loop[5]=1;
-	// loop[3]=1;
-	// loop[2]=1;
-	// loop[1]=1;
+	// x_bit_length[19]=1;
+	// x_bit_length[17]=1;
+	// x_bit_length[12]=1;
+	// x_bit_length[11]=1;
+	// x_bit_length[8]=1;
+	// x_bit_length[7]=1;
+	// x_bit_length[5]=1;
+	// x_bit_length[3]=1;
+	// x_bit_length[2]=1;
+	// x_bit_length[1]=1;
 	// mpz_set_str(X,"-17652315455488",10);//348bit
-	// loop[44]=-1;
-	// loop[36]=-1;
-	// loop[33]=1;
-	// loop[17]=1;
-	mpz_set_str(X,"-18448925504779055104",10);//508bit
-	loop[64]=-1;
-	loop[51]=-1;
-	loop[46]=1;
-	loop[12]=1;
+	// x_bit_length[44]=-1;
+	// x_bit_length[36]=-1;
+	// x_bit_length[33]=1;
+	// x_bit_length[17]=1;
+	// mpz_set_str(X,"-18448925504779055104",10);//508bit
+	// x_bit_length[64]=-1;
+	// x_bit_length[51]=-1;
+	// x_bit_length[46]=1;
+	// x_bit_length[12]=1;
 
 
 	EFp_set_EC_parameter();//generate p,r,t,b
@@ -59,9 +60,9 @@ int main(void){
 	mpz_out_str(stdout,2,X);
 	printf("\n");
 	int i;
-	for(i=x_bit;i>=0;i--)
-		printf("%d",loop[i]);
-
+	for(i=x_bit;i>=0;i--){
+		printf("%d",x_bit_length[i]);
+	}
 	printf("\n");
 	printf("p = %dbit\n",(int)mpz_sizeinbase(prime,2));
 	printf("r = %dbit\n",(int)mpz_sizeinbase(order,2));
@@ -69,6 +70,11 @@ int main(void){
 	printf("X = %dbit\n",(int)mpz_sizeinbase(X,2));
 	gmp_printf("b = %Zd\n",b);
 
+
+	// struct EFp18 A,B;
+	// EFp18_init(&A);
+	// EFp18_init(&B);
+	// EFp18_random_set(&A);
 
 	check_Pairing();//pairing check
 	// Masure_pairing_time();
@@ -479,7 +485,6 @@ void Fp3_mul_old(struct Fp3 *ANS,struct Fp3 *A,struct Fp3 *B){
 	Fp_sub(&t_ans.x2,&tmp1,&a3b3);
 	Fp3_set(ANS,&t_ans);
 }
-
 void Fp3_mul_Fp(struct Fp3 *ANS,struct Fp3 *A,struct Fp *B){
 	struct Fp3 tmp;
 	Fp3_init(&tmp);
@@ -503,6 +508,22 @@ void Fp3_mul_xi(struct Fp3 *ANS,struct Fp3 *A){
 	Fp3_set(ANS,&tmp);
 
 	Fp3_clear(&tmp);
+}
+void Fp3_mul_xi_inv(struct Fp3 *ANS,struct Fp3 *A){
+	struct Fp3 tmp;
+	Fp3_init(&tmp);
+	struct Fp Fp_c1;
+	Fp_init(&Fp_c1);
+	Fp_set_ui(&Fp_c1,c1);
+
+	Fp_div(&tmp.x2,&A->x0,&Fp_c1);
+	Fp_set(&tmp.x0,&A->x1);
+	Fp_set(&tmp.x1,&A->x2);
+
+	Fp3_set(ANS,&tmp);
+
+	Fp3_clear(&tmp);
+	Fp_clear(&Fp_c1);
 }
 void Fp3_mul_ui(struct Fp3 *ANS,struct Fp3 *A,unsigned long int B){
 	struct Fp3 tmp;
@@ -757,14 +778,6 @@ void Fp3_frobenius_map(struct Fp3 *ANS, struct Fp3 *A){
 	Fp_clear(&set_c1);
 	Fp3_clear(&t_ans);
 
-}
-void Fp3_frobenius_map_old(struct Fp3 *ANS, struct Fp3 *A){
-	struct Fp3 tmp;
-	Fp3_init(&tmp);
-
-	Fp3_pow(&tmp,A,prime);
-	Fp3_set(ANS,&tmp);
-	Fp3_clear(&tmp);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -1125,14 +1138,7 @@ void Fp6_frobenius_map(struct Fp6 *ANS, struct Fp6 *A){
 	Fp_clear(&set_c1);
 	Fp6_clear(&t_ans);
 }
-void Fp6_frobenius_map_old(struct Fp6 *ANS, struct Fp6 *A){
-	struct Fp6 tmp;
-	Fp6_init(&tmp);
 
-	Fp6_pow(&tmp,A,prime);
-	Fp6_set(ANS,&tmp);
-	Fp6_clear(&tmp);
-}
 //-----------------------------------------------------------------------------------------
 
 void Fp18_init(struct Fp18 *A){
@@ -1404,7 +1410,6 @@ void Fp18_sqrt(struct Fp18 *ANS,struct Fp18 *A){
 
 	while(Fp18_legendre(&n)!=-1){
 		Fp18_random(&n);
-		// printf("%d\n",Fp18_legendre(&n));
 	}
 
 	mpz_pow_ui(q,prime,18);
@@ -1474,25 +1479,37 @@ int Fp18_cmp_mpz(struct Fp18 *A,mpz_t B){
 	return 1;
 }
 int Fp18_legendre(struct Fp18 *A){
-	mpz_t i,cmp;
+	mpz_t cmp,pow;
 	struct Fp18 tmp;
-	mpz_init(i);
+	struct Fp18 frobenius;
+	int i;
+
 	mpz_init(cmp);
+	mpz_init(pow);
 	Fp18_init(&tmp);
+	Fp18_init(&frobenius);
+
 	mpz_set_ui(cmp,1);
-	mpz_pow_ui(i,prime,18);
-	mpz_sub_ui(i,i,1);
-	mpz_tdiv_q_ui(i,i,2);
-	Fp18_pow(&tmp,A,i);
+	Fp18_frobenius_map(&tmp,A,9);
+	Fp18_mul(&tmp,&tmp,A);
+
+	Fp18_frobenius_map(&frobenius,&tmp,1);
+	Fp18_mul(&tmp,&tmp,&frobenius);
+	for(i=1;i<8;i++){
+		Fp18_frobenius_map(&frobenius,&frobenius,1);
+		Fp18_mul(&tmp,&tmp,&frobenius);
+	}
+
+	mpz_sub_ui(pow,prime,1);
+	mpz_div_ui(pow,pow,2);
+	Fp18_pow(&tmp,&tmp,pow);
 
 	if((Fp18_cmp_mpz(&tmp,cmp))==0){
 		Fp18_clear(&tmp);
-		mpz_clear(i);
 		mpz_clear(cmp);
 		return 1;
 	}else{
 		Fp18_clear(&tmp);
-		mpz_clear(i);
 		mpz_clear(cmp);
 		return -1;
 	}
@@ -1503,14 +1520,6 @@ void Fp18_neg(struct Fp18 *ANS,struct Fp18 *A){
 	Fp6_neg(&tmp.x0,&A->x0);
 	Fp6_neg(&tmp.x1,&A->x1);
 	Fp6_neg(&tmp.x2,&A->x2);
-	Fp18_set(ANS,&tmp);
-	Fp18_clear(&tmp);
-}
-void Fp18_frobenius_map_old(struct Fp18 *ANS, struct Fp18 *A,int i){
-	struct Fp18 tmp;
-	Fp18_init(&tmp);
-
-	Fp18_pow(&tmp,A,prime);
 	Fp18_set(ANS,&tmp);
 	Fp18_clear(&tmp);
 }
@@ -1886,7 +1895,7 @@ void EFp3_clear(struct EFp3 *A){
 	Fp3_clear(&A->y);
 }
 void EFp3_printf(struct EFp3 *A){
-	gmp_printf("((%Zd,%Zd,%Zd),(%Zd,%Zd,%Zd))\n",A->x.x0.x0,A->x.x1.x0,A->x.x2.x0,A->y.x0.x0,A->y.x1.x0,A->y.x2.x0);
+	gmp_printf("((%Zd,%Zd,%Zd),(%Zd,%Zd,%Zd))\n\n",A->x.x0.x0,A->x.x1.x0,A->x.x2.x0,A->y.x0.x0,A->y.x1.x0,A->y.x2.x0);
 }
 void EFp3_ECD(struct EFp3 *ANS, struct EFp3 *P){
 	if(P->infity==TRUE){
@@ -2013,13 +2022,24 @@ void EFp3_set_EFp(struct EFp3 *ANS,struct EFp *A){
 	Fp_set(&ANS->y.x0,&A->y);
 	ANS->infity=A->infity;
 }
-void EFp3_set_EFp18_Sparse(struct EFp3 *ANS,struct EFp18 *A){
+int EFp3_set_EFp18_Sparse(struct EFp3 *ANS,struct EFp18 *A){
 	Fp3_set_ui(&ANS->x,0);
 	Fp3_set_ui(&ANS->y,0);
-
-	Fp3_set(&ANS->x,&A->x.x2.x0);
-	Fp3_set(&ANS->y,&A->y.x0.x1);
-	ANS->infity=A->infity;
+	struct Fp3 cmp;
+	Fp3_init(&cmp);
+	if(Fp3_cmp(&A->x.x2.x0,&cmp) && Fp3_cmp(&A->y.x0.x1,&cmp)){
+		Fp3_set(&ANS->x,&A->x.x2.x0);
+		Fp3_set(&ANS->y,&A->y.x0.x1);
+		ANS->infity=A->infity;
+		return 1;
+	}else if(Fp3_cmp(&A->x.x1.x1,&cmp) && Fp3_cmp(&A->y.x0.x1,&cmp)){
+		Fp3_set(&ANS->x,&A->x.x1.x1);
+		Fp3_set(&ANS->y,&A->y.x0.x1);
+		ANS->infity=A->infity;
+		return 2;
+	}else{
+		return 0;
+	}
 }
 void EFp3_random_set(struct EFp3 *ANS){
 	struct Fp3 a,x;
@@ -2284,6 +2304,121 @@ void EFp6_random_set(struct EFp6 *ANS){
 	mpz_clear(r6_div_r2);
 }
 
+void EFp3_type2_ECD(struct EFp3 *ANS, struct EFp3 *P){
+	if(P->infity==TRUE){
+		EFp3_set(ANS,P);
+		return;
+	}
+	mpz_t cmp;
+	mpz_init(cmp);
+	mpz_set_ui(cmp,0);
+	if(Fp3_cmp_mpz(&P->y,cmp)==0){//P.y==0
+		EFp3_set_infity(ANS);
+		return;
+	}
+
+	struct Fp3 x,y,lambda,tmp;
+	struct EFp3 t_ans;
+	Fp3_init(&x);
+	Fp3_init(&lambda);
+	Fp3_init(&tmp);
+	Fp3_init(&y);
+	EFp3_init(&t_ans);
+
+	Fp3_mul(&x,&P->x,&P->x);
+	Fp3_add(&tmp,&x,&x);
+	Fp3_add(&x,&tmp,&x);
+	Fp3_add(&y,&P->y,&P->y);
+	Fp3_div(&lambda,&x,&y);
+	Fp3_mul(&tmp,&lambda,&lambda);
+	Fp3_mul_xi(&tmp,&tmp);
+	Fp3_add(&x,&P->x,&P->x);
+	Fp3_sub(&x,&tmp,&x);
+	Fp3_sub(&tmp,&P->x,&x);
+	Fp3_set(&t_ans.x,&x);
+	Fp3_mul(&tmp,&tmp,&lambda);
+	Fp3_mul_xi(&tmp,&tmp);
+	Fp3_sub(&t_ans.y,&tmp,&P->y);
+
+	EFp3_set(ANS,&t_ans);
+
+	Fp3_clear(&x);
+	Fp3_clear(&lambda);
+	Fp3_clear(&y);
+	Fp3_clear(&tmp);
+	EFp3_clear(&t_ans);
+}
+void EFp3_type2_ECA(struct EFp3 *ANS, struct EFp3 *P1, struct EFp3 *P2){
+	if(P2->infity==TRUE){//if P2==inf
+		EFp3_set(ANS,P1);
+		return;
+	}
+	else if(P1->infity==TRUE){//if P1==inf
+		EFp3_set(ANS,P2);
+		return;
+	}
+	else if(Fp3_cmp(&P1->x,&P2->x)==0&&Fp3_cmp(&P1->y,&P2->y)==1){ //P1.x==P2.x&&P1.y!=P2.y
+		EFp3_set_infity(ANS);
+		return;
+	}
+	else if(EFp3_cmp(P1,P2)==0){ // P=Q
+		EFp3_type2_ECD(ANS,P1);
+		return;
+	}
+
+	struct Fp3 x,y,lambda,tmp;
+	struct EFp3 t_ans;
+
+	Fp3_init(&x);
+	Fp3_init(&y);
+	Fp3_init(&lambda);
+	Fp3_init(&tmp);
+	EFp3_init(&t_ans);
+
+	Fp3_sub(&x,&P2->x,&P1->x);
+	Fp3_sub(&y,&P2->y,&P1->y);
+	Fp3_div(&lambda,&y,&x);
+	Fp3_mul(&tmp,&lambda,&lambda);
+	Fp3_mul_xi_inv(&tmp,&tmp);
+	Fp3_add(&x,&P1->x,&P2->x);
+	Fp3_sub(&x,&tmp,&x);
+	Fp3_sub(&tmp,&P1->x,&x);
+	Fp3_set(&t_ans.x,&x);
+	Fp3_mul(&tmp,&tmp,&lambda);
+	Fp3_sub(&t_ans.y,&tmp,&P1->y);
+
+	EFp3_set(ANS,&t_ans);
+
+	Fp3_clear(&x);
+	Fp3_clear(&y);
+	Fp3_clear(&lambda);
+	Fp3_clear(&tmp);
+	EFp3_clear(&t_ans);
+}
+void EFp3_type2_SCM(struct EFp3 *ANS, struct EFp3 *P,mpz_t j){
+	int i;
+	int r;//bit数
+	r= (int)mpz_sizeinbase(j,2);
+
+	struct EFp3 Q;
+	EFp3_init(&Q);
+	EFp3_set(&Q,P);
+
+	for(i=r-2;i>=0;i--){
+		if(mpz_tstbit(j,i)==1){
+			EFp3_type2_ECD(&Q,&Q);
+			// EFp3_printf(&Q);
+			EFp3_type2_ECA(&Q,&Q,P);
+		}else{
+			EFp3_type2_ECD(&Q,&Q);
+		}
+	}
+
+	EFp3_set(ANS,&Q);
+	EFp3_clear(&Q);
+	return;
+}
+
 //-----------------------------------------------------------------------------------------
 
 void EFp18_init(struct EFp18 *A){
@@ -2432,21 +2567,33 @@ int EFp18_cmp(struct EFp18 *A,struct EFp18 *B){
 	return 1;
 }
 void EFp18_random_set(struct EFp18 *ANS){
+	int i=1,j;
 	struct EFp18 P;
 	EFp18_init(&P);
 
 	struct Fp18 x,a;
+	mpz_t r18_q,r18_r;
+	mpz_t tmp1,tmp2,tmp3,tmp,t18,r18;
+	struct EFp18 t[256];
+	struct EFp18 t_ans;
+
 	Fp18_init(&a);
 	Fp18_init(&x);
 
-	//t18=a^18+b^18={(t^3-3pt)^3-3p^3(t^3-3pt)}^2-2p^9
-	mpz_t tmp1,tmp2,tmp3,t_ans,t18,r18;
+	mpz_init(r18_q);
+	mpz_init(r18_r);
+
 	mpz_init(tmp1);
 	mpz_init(tmp2);
 	mpz_init(tmp3);
-	mpz_init(t_ans);
+	mpz_init(tmp);
 	mpz_init(t18);
 	mpz_init(r18);
+	for(i=0;i<256;i++){
+		EFp18_init(&t[i]);
+	}
+	EFp18_init(&t_ans);
+	//t18=a^18+b^18={(t^3-3pt)^3-3p^3(t^3-3pt)}^2-2p^9
 
 	mpz_mul(tmp1,prime,trace);
 	mpz_mul_ui(tmp1,tmp1,3);
@@ -2456,8 +2603,8 @@ void EFp18_random_set(struct EFp18 *ANS){
 
 	mpz_sub(tmp1,tmp2,tmp1);//tmp1=t^3-3pt
 
-	mpz_mul(t_ans,tmp1,tmp1);
-	mpz_mul(t_ans,t_ans,tmp1);//t_ans=(t^3-3pt)^3
+	mpz_mul(tmp,tmp1,tmp1);
+	mpz_mul(tmp,tmp,tmp1);//tmp=(t^3-3pt)^3
 
 	mpz_mul(tmp2,prime,prime);
 	mpz_mul(tmp2,tmp2,prime);//tmp2=p^3
@@ -2465,13 +2612,13 @@ void EFp18_random_set(struct EFp18 *ANS){
 	mpz_mul(tmp3,tmp1,tmp2);
 	mpz_mul_ui(tmp3,tmp3,3);//tmp3=3p^3(t^3-3pt)
 
-	mpz_sub(t_ans,t_ans,tmp3);//t_ans=(t^3-3pt)^3-3p^3(t^3-3pt)
-	mpz_mul(t_ans,t_ans,t_ans);//t_ans=t_ans^2
+	mpz_sub(tmp,tmp,tmp3);//tmp=(t^3-3pt)^3-3p^3(t^3-3pt)
+	mpz_mul(tmp,tmp,tmp);//tmp=tmp^2
 
 	mpz_pow_ui(tmp2,tmp2,3);//tmp2=p^9
 	mpz_add(tmp3,tmp2,tmp2);//tmp3=2*tmp2
 
-	mpz_sub(t18,t_ans,tmp3);//t18=t_ans-tmp3
+	mpz_sub(t18,tmp,tmp3);//t18=tmp-tmp3
 
 	mpz_mul(tmp3,tmp2,tmp2);//tmp3=p^18
 
@@ -2479,29 +2626,76 @@ void EFp18_random_set(struct EFp18 *ANS){
 	mpz_sub(r18,tmp3,t18);
 	mpz_div(r18,r18,order);
 	mpz_div(r18,r18,order);
-	// mpz_div(r18,r18,order_EFp);
 
 	do{
 		Fp18_random(&x);
 		Fp18_mul(&a,&x,&x);
 		Fp18_mul(&a,&a,&x);
 		mpz_add(a.x0.x0.x0.x0,a.x0.x0.x0.x0,b);
-		// printf("%d\n",Fp18_legendre(&a));
 	}while(Fp18_legendre(&a)!=1);
 	Fp18_sqrt(&P.y,&a);
 	Fp18_set(&P.x,&x);
 
-	EFp18_SCM(ANS,&P,r18);
-	// EFp18_set(ANS,&P);
+	mpz_set(r18_q,r18);
+	int r18_length=(int)(mpz_sizeinbase(r18_q,2)-1)/8+1;
+	int r18_bit_separate[r18_length];
+
+	i=0;
+	//256-adic representation
+	while(mpz_cmp_ui(r18_q,0)!=0){
+		mpz_tdiv_qr_ui(r18_q,r18_r,r18_q,256);
+		r18_bit_separate[i]=(unsigned long int)mpz_get_ui(r18_r);
+		// printf("%d\n",r18_bit_separate[i]);
+		i++;
+	}
+	EFp18_set(&t[1],&P);
+	EFp18_ECD(&t[2],&t[1]);
+	EFp18_ECD(&t[4],&t[2]);
+	EFp18_ECD(&t[8],&t[4]);
+	EFp18_ECD(&t[16],&t[8]);
+	EFp18_ECD(&t[32],&t[16]);
+	EFp18_ECD(&t[64],&t[32]);
+	EFp18_ECD(&t[128],&t[64]);
+
+	for(i=1;i<256;i=i*2){
+		for(j=1;j<i;j++){
+			EFp18_ECA(&t[i+j],&t[i],&t[j]);
+		}
+	}
+
+	EFp18_set(&t_ans,&t[r18_bit_separate[r18_length-1]]);
+	for(i=r18_length-2;i>=0;i--){
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		EFp18_ECD(&t_ans,&t_ans);
+		if(r18_bit_separate[i]!=0){
+			EFp18_ECA(&t_ans,&t_ans,&t[r18_bit_separate[i]]);
+		}
+	}
+	EFp18_set(ANS,&t_ans);
+
 	EFp18_clear(&P);
 	Fp18_clear(&a);
 	Fp18_clear(&x);
+
+	mpz_clear(r18_q);
+	mpz_clear(r18_r);
+
 	mpz_clear(tmp1);
 	mpz_clear(tmp2);
 	mpz_clear(tmp3);
-	mpz_clear(t_ans);
+	mpz_clear(tmp);
 	mpz_clear(t18);
 	mpz_clear(r18);
+	for(i=0;i<256;i++){
+		EFp18_clear(&t[i]);
+	}
+	EFp18_clear(&t_ans);
 
 }
 void EFp18_set_EFp(struct EFp18 *A,struct EFp *B){
@@ -2512,12 +2706,12 @@ void EFp18_set_EFp(struct EFp18 *A,struct EFp *B){
 	Fp_set(&A->y.x0.x0.x0,&B->y);
 	A->infity=B->infity;
 }
-void EFp18_frobenius_map(struct EFp18 *ANS,struct EFp18 *A){
+void EFp18_frobenius_map(struct EFp18 *ANS,struct EFp18 *A,int i){
 	struct EFp18 tmp;
 	EFp18_init(&tmp);
 
-	Fp18_frobenius_map(&tmp.x,&A->x,1);
-	Fp18_frobenius_map(&tmp.y,&A->y,1);
+	Fp18_frobenius_map(&tmp.x,&A->x,i);
+	Fp18_frobenius_map(&tmp.y,&A->y,i);
 
 	EFp18_set(ANS,&tmp);
 
@@ -2531,7 +2725,7 @@ void EFp18_random_set_G2(struct EFp18 *ANS){
 
 	EFp18_random_set(&P);
 
-	EFp18_frobenius_map(&P_frobenius,&P);
+	EFp18_frobenius_map(&P_frobenius,&P,1);
 	Fp18_neg(&tmp_EFp18.y,&P.y);
 	Fp18_set(&tmp_EFp18.x,&P.x);
 
@@ -2623,30 +2817,30 @@ void EFp_set_EC_parameter(void){
 	// set curve paramater y^2=x^3+b
 	struct EFp P,ANS;
 	int legendle;
-	struct Fp a,x;
+	struct Fp rational_point,x;
 	mpz_t tmp_b;
-	Fp_init(&a);
+	Fp_init(&rational_point);
 	EFp_init(&P);
 	EFp_init(&ANS);
 	Fp_init(&x);
 	mpz_init(tmp_b);
-	mpz_set_ui(tmp_b,0);
+	mpz_set_si(tmp_b,0);
 
 	for(;;){
 		mpz_add_ui(tmp_b,tmp_b,1);
 		Fp_set_ui(&x,1);
 		legendle=0;
 		while(legendle!=1){
-			mpz_powm_ui(a.x0,x.x0,3,prime);
-			mpz_add(a.x0,a.x0,tmp_b);
-			if((legendle=mpz_legendre(a.x0,prime))==1){
-				Fp_sqrt(&P.y,&a);
+			mpz_powm_ui(rational_point.x0,x.x0,3,prime);
+			mpz_add(rational_point.x0,rational_point.x0,tmp_b);
+			if((legendle=mpz_legendre(rational_point.x0,prime))==1){
+				Fp_sqrt(&P.y,&rational_point);
 				Fp_set(&P.x,&x);
 				EFp_SCM(&ANS,&P,order_EFp);
 				if(ANS.infity==TRUE){
 					mpz_set(b,tmp_b);
 					mpz_clear(tmp_b);
-					Fp_clear(&a);
+					Fp_clear(&rational_point);
 					Fp_clear(&x);
 					EFp_clear(&P);
 					EFp_clear(&ANS);
@@ -2660,7 +2854,7 @@ void EFp_set_EC_parameter(void){
 }
 
 //-----------------------------------------------------------------------------------------
-void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
+void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t loop){
 	struct Fp18 l_sum,v_sum;
 	Fp18_init(&l_sum);
 	Fp18_init(&v_sum);
@@ -2684,10 +2878,10 @@ void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
 	Fp18_init(&lambda);
 	int r_bit;//bit数
 
-	r_bit= (int)mpz_sizeinbase(roop,2);
+	r_bit= (int)mpz_sizeinbase(loop,2);
 
 	for(i=r_bit-2;i>=0;i--){
-		if(mpz_tstbit(roop,i)==1){
+		if(mpz_tstbit(loop,i)==1){
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 			Fp18_mul(&v_sum,&v_sum,&v_sum);
 
@@ -2695,9 +2889,6 @@ void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
 			Fp18_mul(&l_sum,&l_sum,&ltt);
 
 			EFp18_ECD(&T,&T);
-			// Fp18_printf(&ltt);
-			// EFp18_printf(&T);
-
 			v2t_q(&v2t,&T,Q);
 			Fp18_mul(&v_sum,&v_sum,&v2t);
 
@@ -2705,8 +2896,6 @@ void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
 			Fp18_mul(&l_sum,&l_sum,&ltp);
 
 			EFp18_ECA(&T,&T,P);
-			// Fp18_printf(&ltp);
-			// EFp18_printf(&T);
 			vtp_q(&vtp,&T,Q);
 			Fp18_mul(&v_sum,&v_sum,&vtp);
 		}else{
@@ -2717,7 +2906,6 @@ void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
 			Fp18_mul(&l_sum,&l_sum,&ltt);
 
 			EFp18_ECD(&T,&T);
-
 			v2t_q(&v2t,&T,Q);
 			Fp18_mul(&v_sum,&v_sum,&v2t);
 		}
@@ -2739,7 +2927,7 @@ void Miller_algo(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
 	Fp18_clear(&tmp1);
 	Fp18_clear(&lambda);
 }
-void Optimal_Miller(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop){
+void Optimal_Miller(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t loop){
 	struct Fp18 l_sum;
 	Fp18_init(&l_sum);
 	Fp_set_ui(&l_sum.x0.x0.x0,1);
@@ -2751,11 +2939,9 @@ void Optimal_Miller(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop)
 	mpz_t p3;
 	mpz_init(p3);
 
-	struct Fp18 ltt,ltp,v2t,vtp;
+	struct Fp18 ltt,ltp;
 	Fp18_init(&ltt);
 	Fp18_init(&ltp);
-	Fp18_init(&v2t);
-	Fp18_init(&vtp);
 
 	struct Fp18 Px_neg;
 	Fp18_init(&Px_neg);
@@ -2767,52 +2953,20 @@ void Optimal_Miller(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop)
 	Fp18_init(&tmp1);
 	Fp18_init(&lambda);
 
-	// int r_bit;//bit数
-	// r_bit= (int)mpz_sizeinbase(roop,2);
-	// EFp18_set(&T,Q);
-	//
-	// for(i=r_bit-2;i>=0;i--){
-	// 	if(mpz_tstbit(roop,i)==1){
-	// 		Fp18_mul(&l_sum,&l_sum,&l_sum);
-	//
-	// 		// ltt_q(&ltt,&T,P);
-	// 		// EFp18_ECD(&T,&T);
-	//
-	// 		// ltp_q(&ltp,&T,P,Q);
-	// 		// EFp18_ECA(&T,&T,Q);
-	// 		// Fp18_printf(&ltp);
-	// 		DBL_LINE(&ltt,&T,&T,P,&Px_neg);
-	// 		ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
-	//
-	// 		Fp18_mul(&l_sum,&l_sum,&ltt);
-	// 		Fp18_mul(&l_sum,&l_sum,&ltp);
-	// 		// printf("%d\n",i);
-	// 	}else{
-	// 		Fp18_mul(&l_sum,&l_sum,&l_sum);
-	//
-	// 		// ltt_q(&ltt,&T,P);
-	// 		// EFp18_ECD(&T,&T);
-	// 		DBL_LINE(&ltt,&T,&T,P,&Px_neg);
-	//
-	// 		Fp18_mul(&l_sum,&l_sum,&ltt);
-	// 	}
-	// }
-
 	struct EFp18 Q_neg;
 	EFp18_init(&Q_neg);
 	Fp18_neg(&Q_neg.y,&Q->y);
 	Fp18_set(&Q_neg.x,&Q->x);
-	if(loop[x_bit]==-1){
+	if(x_bit_length[x_bit]==-1){
 		EFp18_set(&T,&Q_neg);
 	}else{
 		EFp18_set(&T,Q);
 	}
 
 	for(i=x_bit-1;i>=0;i--){
-		switch (loop[i]){
+		switch (x_bit_length[i]){
 			case 0:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
-
 			DBL_LINE(&ltt,&T,&T,P,&Px_neg);
 
 			Fp18_mul(&l_sum,&l_sum,&ltt);
@@ -2844,8 +2998,8 @@ void Optimal_Miller(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop)
 	ltp_q(&ltp,&T,&EFp_tmp,P);
 	Fp18_mul(&l_sum,&l_sum,&ltp);
 
+	// Fp18_printf(&ltp);
 	Fp18_set(ANS,&l_sum);
-
 
 	// Fp18_random(&l_sum);
 	// struct timeval opt_1,opt_2;
@@ -2872,8 +3026,6 @@ void Optimal_Miller(struct Fp18 *ANS,struct EFp18 *P,struct EFp18 *Q,mpz_t roop)
 	mpz_clear(p3);
 	Fp18_clear(&ltt);
 	Fp18_clear(&ltp);
-	Fp18_clear(&v2t);
-	Fp18_clear(&vtp);
 	Fp18_clear(&tmp1);
 	Fp18_clear(&lambda);
 }
@@ -2901,28 +3053,30 @@ void Ate_Pairing(struct Fp18 *ANS,struct EFp18 *G1,struct EFp18 *G2){
 
 	Fp18_clear(&t_ans);
 }
-void Optimal_Ate_Pairing(struct Fp18 *ANS,struct EFp18 *G1,struct EFp18 *G2){
+void Optimal_Ate_Pairing(struct Fp18 *ANS,struct EFp *G1,struct EFp18 *G2){
 	mpz_t p3;
 	mpz_init(p3);
-	struct EFp18 zQ;
+	struct EFp18 zQ,EFp18_G1;
 	EFp18_init(&zQ);
+	EFp18_init(&EFp18_G1);
 
 	struct Fp18 ltp;
 	Fp18_init(&ltp);
 
-	struct Fp18 Miller_X,Miller_3;
+	struct Fp18 Miller_X,Miller_3,t_ans;
 	Fp18_init(&Miller_X);
 	Fp18_init(&Miller_3);
-
-	struct Fp18 t_ans;
 	Fp18_init(&t_ans);
-	Optimal_Miller(&Miller_X,G1,G2,X);
 
 	mpz_t set_3;
 	mpz_init(set_3);
 	mpz_set_ui(set_3,3);
 
-	Miller_algo(&Miller_3,G2,G1,set_3);
+	EFp18_set_EFp(&EFp18_G1,G1);
+
+	Optimal_Miller(&Miller_X,&EFp18_G1,G2,X);
+
+	Miller_algo(&Miller_3,G2,&EFp18_G1,set_3);
 	Fp18_pow(&Miller_3,&Miller_3,prime);
 
 	Fp18_mul(&t_ans,&Miller_X,&Miller_3);
@@ -3178,7 +3332,100 @@ void DBL_LINE(struct Fp18 *l_ANS,struct EFp18 *T_ANS,struct EFp18 *T,struct EFp1
 	mpz_clear(cmp);
 }
 //-----------------------------------------------------------------------------------------
-void Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){
+void Sparse_Ate_Pairing(struct Fp18 *ANS,struct EFp3 *G1,struct EFp3 *G2){
+	struct Fp18 t_ans;
+	Fp18_init(&t_ans);
+
+	mpz_t tm1;
+	mpz_init(tm1);
+	mpz_sub_ui(tm1,trace,1);
+
+	Sparse_type1_Miller(&t_ans,G1,G2,tm1);
+	Final_Exp(&t_ans,&t_ans);
+	Fp18_set(ANS,&t_ans);
+
+	Fp18_clear(&t_ans);
+	mpz_clear(tm1);
+}
+void Sparse_Optimal_Ate_Pairing(struct Fp18 *ANS,struct EFp *G1,struct EFp18 *G2){
+	// mpz_t p3;
+	// mpz_init(p3);
+	// struct EFp18 zQ;
+	// EFp18_init(&zQ);
+	//
+	// struct Fp18 ltp;
+	// Fp18_init(&ltp);
+	//
+	// struct Fp18 Miller_X,Miller_3;
+	// Fp18_init(&Miller_X);
+	// Fp18_init(&Miller_3);
+	//
+	// struct Fp18 t_ans;
+	// Fp18_init(&t_ans);
+	//
+	// mpz_t set_3;
+	// mpz_init(set_3);
+	// mpz_set_ui(set_3,3);
+	//
+	// Sparse_type1_Optimal_Miller(&Miller_X,G1,G2,X);
+	//
+	// Sparse_type1_Miller(&Miller_3,G1,G2,set_3);
+	// Fp18_pow(&Miller_3,&Miller_3,prime);
+	//
+	// Fp18_mul(&t_ans,&Miller_X,&Miller_3);
+	//
+	// Final_Exp(ANS,&t_ans);
+	//
+	// mpz_clear(p3);
+	// EFp18_clear(&zQ);
+	// Fp18_clear(&ltp);
+	// Fp18_clear(&Miller_X);
+	// Fp18_clear(&Miller_3);
+	// Fp18_clear(&t_ans);
+	// mpz_clear(set_3);
+	mpz_t p3,set_3;
+	mpz_init(p3);
+	mpz_init(set_3);
+	mpz_set_ui(set_3,3);
+
+	struct EFp3 EFp3_G1,EFp3_G2;
+	EFp3_init(&EFp3_G1);
+	EFp3_init(&EFp3_G2);
+
+
+	struct Fp18 ltp,Miller_X,Miller_3,t_ans;
+	Fp18_init(&ltp);
+	Fp18_init(&Miller_X);
+	Fp18_init(&Miller_3);
+	Fp18_init(&t_ans);
+	int i;
+
+	EFp3_set_EFp(&EFp3_G1,G1);
+	i=EFp3_set_EFp18_Sparse(&EFp3_G2,G2);
+	if(i==1){
+		Sparse_type1_Optimal_Miller(&Miller_X,&EFp3_G1,&EFp3_G2,X);
+		Sparse_type1_Miller(&Miller_3,&EFp3_G1,&EFp3_G2,set_3);
+	}else if(i==2){
+		Sparse_type2_Optimal_Miller(&Miller_X,&EFp3_G1,&EFp3_G2,X);
+		Sparse_type2_Miller(&Miller_3,&EFp3_G1,&EFp3_G2,set_3);
+	}else{
+		printf("G2 rational point error\n");
+	}
+
+	Fp18_pow(&Miller_3,&Miller_3,prime);
+	Fp18_mul(&t_ans,&Miller_X,&Miller_3);
+
+	Final_Exp(ANS,&t_ans);
+
+	mpz_clear(p3);
+	Fp18_clear(&ltp);
+	Fp18_clear(&Miller_X);
+	Fp18_clear(&Miller_3);
+	Fp18_clear(&t_ans);
+	mpz_clear(set_3);
+}
+//Sparse type 1 (G2.x.x2.x0,G2.y.x0.x1)
+void Sparse_type1_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){
 	struct Fp18 l_sum;
 	Fp18_init(&l_sum);
 	Fp_set_ui(&l_sum.x0.x0.x0,1);
@@ -3205,16 +3452,16 @@ void Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){
 	// EFp3_printf(Q);
 
 	int r_bit;//bit数
-	r_bit= (int)mpz_sizeinbase(roop,2);
+	r_bit= (int)mpz_sizeinbase(loop,2);
 
 	for(i=r_bit-2;i>=0;i--){
-		if(mpz_tstbit(roop,i)==1){
+		if(mpz_tstbit(loop,i)==1){
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 
-			Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Sparse_type1_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
 			// EFp3_printf(&T);
 			// Fp18_printf(&ltt);
-			Sparse_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
+			Sparse_type1_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
 			// EFp3_printf(&T);
 			// Fp18_printf(&ltp);
 
@@ -3222,7 +3469,7 @@ void Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){
 			Fp18_mul(&l_sum,&l_sum,&ltp);
 		}else{
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
-			Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Sparse_type1_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
 			Fp18_mul(&l_sum,&l_sum,&ltt);
 		}
 	}
@@ -3237,7 +3484,7 @@ void Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){
 	Fp18_clear(&ltt);
 	Fp18_clear(&ltp);
 }
-void Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){
+void Sparse_type1_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){
 	struct Fp18 l_sum;
 	Fp18_init(&l_sum);
 	Fp_set_ui(&l_sum.x0.x0.x0,1);
@@ -3260,73 +3507,52 @@ void Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t 
 
 	Fp3_neg(&Px_neg,&P->x);
 
-	// int r_bit;//bit数
-	// r_bit= (int)mpz_sizeinbase(roop,2);
-	// EFp3_set(&T,Q);
-	//
-	// for(i=r_bit-2;i>=0;i--){
-	// 	if(mpz_tstbit(roop,i)==1){
-	// 		Fp18_mul(&l_sum,&l_sum,&l_sum);
-	//
-	// 		Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
-	// 		Sparse_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
-	//
-	// 		// Fp18_mul(&l_sum,&l_sum,&ltt);
-	// 		Sparse_mul(&l_sum,&l_sum,&ltt);
-	// 		// Fp18_mul(&l_sum,&l_sum,&ltp);
-	// 		Sparse_mul(&l_sum,&l_sum,&ltp);
-	// 	}else{
-	// 		Fp18_mul(&l_sum,&l_sum,&l_sum);
-	// 		Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
-	//
-	// 		// Fp18_mul(&l_sum,&l_sum,&ltt);
-	// 		Sparse_mul(&l_sum,&l_sum,&ltt);
-	// 	}
-	// }
-
 	struct EFp3 Q_neg;
 	EFp3_init(&Q_neg);
 	Fp3_neg(&Q_neg.y,&Q->y);
 	Fp3_set(&Q_neg.x,&Q->x);
-	if(loop[x_bit]==-1){
+	if(x_bit_length[x_bit]==-1){
 		EFp3_set(&T,&Q_neg);
 	}else{
 		EFp3_set(&T,Q);
 	}
 	for(i=x_bit-1;i>=0;i--){
-		switch (loop[i]){
+		switch (x_bit_length[i]){
 			case 0:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
-			Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Sparse_type1_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
 
-			Sparse_mul(&l_sum,&l_sum,&ltt);
+			Sparse_type1_mul(&l_sum,&l_sum,&ltt);
 			break;
 			case 1:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 
-			Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
-			Sparse_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
+			Sparse_type1_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Sparse_type1_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
 
-			Sparse_mul(&l_sum,&l_sum,&ltt);
-			Sparse_mul(&l_sum,&l_sum,&ltp);
+			Sparse_type1_mul(&l_sum,&l_sum,&ltt);
+			Sparse_type1_mul(&l_sum,&l_sum,&ltp);
 			break;
 			case -1:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 
-			Sparse_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
-			Sparse_ADD_LINE(&ltp,&T,&T,&Q_neg,P,&Px_neg);
+			Sparse_type1_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			// EFp3_printf(&T);
+			Sparse_type1_ADD_LINE(&ltp,&T,&T,&Q_neg,P,&Px_neg);
+			// EFp3_printf(&T);
 
-			Sparse_mul(&l_sum,&l_sum,&ltt);
-			Sparse_mul(&l_sum,&l_sum,&ltp);
+			Sparse_type1_mul(&l_sum,&l_sum,&ltt);
+			Sparse_type1_mul(&l_sum,&l_sum,&ltp);
 			break;
 		}
 	}
 
 	mpz_mul_ui(p3,prime,3);
 	EFp3_SCM(&EFp_tmp,Q,p3);
+	// EFp3_printf(&EFp_tmp);
 
-	// ltp_q_Sparse(&ltp,&T,&EFp_tmp,P);
-	Sparse_ADD_LINE(&ltp,&T,&T,&EFp_tmp,P,&Px_neg);
+	// ltp_q_Sparse_type1(&ltp,&T,&EFp_tmp,P);
+	Sparse_type1_ADD_LINE(&ltp,&T,&T,&EFp_tmp,P,&Px_neg);
 	Fp18_mul(&l_sum,&l_sum,&ltp);
 
 	Fp18_set(ANS,&l_sum);
@@ -3335,17 +3561,17 @@ void Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t 
 	// struct timeval sps_1,sps_2;
 	//
 	// gettimeofday(&sps_1, NULL);
-	// Sparse_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
+	// Sparse_type1_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
 	// gettimeofday(&sps_2, NULL);
 	// sps_add+=((double)(sps_2.tv_sec - sps_1.tv_sec)+ (double)(sps_2.tv_usec-sps_1.tv_usec)*1.0E-6);
 	//
 	// gettimeofday(&sps_1, NULL);
-	// Sparse_DBL_LINE(&ltp,&T,&T,P,&Px_neg);
+	// Sparse_type1_DBL_LINE(&ltp,&T,&T,P,&Px_neg);
 	// gettimeofday(&sps_2, NULL);
 	// sps_dbl+=((double)(sps_2.tv_sec - sps_1.tv_sec)+ (double)(sps_2.tv_usec-sps_1.tv_usec)*1.0E-6);
 	//
 	// gettimeofday(&sps_1, NULL);
-	// Sparse_mul(&l_sum,&l_sum,&ltp);
+	// Sparse_type1_mul(&l_sum,&l_sum,&ltp);
 	// gettimeofday(&sps_2, NULL);
 	// sps_mul+=((double)(sps_2.tv_sec - sps_1.tv_sec)+ (double)(sps_2.tv_usec-sps_1.tv_usec)*1.0E-6);
 
@@ -3360,58 +3586,7 @@ void Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t 
 	Fp18_clear(&ltp);
 	Fp3_clear(&Px_neg);
 }
-void Sparse_Ate_Pairing(struct Fp18 *ANS,struct EFp3 *G1,struct EFp3 *G2){
-	struct Fp18 t_ans;
-	Fp18_init(&t_ans);
-
-	mpz_t tm1;
-	mpz_init(tm1);
-	mpz_sub_ui(tm1,trace,1);
-
-	Sparse_Miller(&t_ans,G1,G2,tm1);
-	Final_Exp(&t_ans,&t_ans);
-	Fp18_set(ANS,&t_ans);
-
-	Fp18_clear(&t_ans);
-	mpz_clear(tm1);
-}
-void Sparse_Optimal_Ate_Pairing(struct Fp18 *ANS,struct EFp3 *G1,struct EFp3 *G2){
-	mpz_t p3;
-	mpz_init(p3);
-	struct EFp18 zQ;
-	EFp18_init(&zQ);
-
-	struct Fp18 ltp;
-	Fp18_init(&ltp);
-
-	struct Fp18 Miller_X,Miller_3;
-	Fp18_init(&Miller_X);
-	Fp18_init(&Miller_3);
-
-	struct Fp18 t_ans;
-	Fp18_init(&t_ans);
-	Sparse_Optimal_Miller(&Miller_X,G1,G2,X);
-
-	mpz_t set_3;
-	mpz_init(set_3);
-	mpz_set_ui(set_3,3);
-
-	Sparse_Miller(&Miller_3,G1,G2,set_3);
-	Fp18_pow(&Miller_3,&Miller_3,prime);
-
-	Fp18_mul(&t_ans,&Miller_X,&Miller_3);
-
-	Final_Exp(ANS,&t_ans);
-
-	mpz_clear(p3);
-	EFp18_clear(&zQ);
-	Fp18_clear(&ltp);
-	Fp18_clear(&Miller_X);
-	Fp18_clear(&Miller_3);
-	Fp18_clear(&t_ans);
-	mpz_clear(set_3);
-}
-void Sparse_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *P,struct EFp3 *Q,struct Fp3 *Qx_neg){
+void Sparse_type1_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *P,struct EFp3 *Q,struct Fp3 *Qx_neg){
 	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltp;
 	Fp3_init(&tmp1);
 	Fp3_init(&tmp2);
@@ -3501,7 +3676,7 @@ void Sparse_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct
 	Fp3_clear(&E);
 	Fp3_clear(&F);
 }
-void Sparse_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *Q,struct Fp3 *Qx_neg){
+void Sparse_type1_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *Q,struct Fp3 *Qx_neg){
 	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltp;
 	Fp3_init(&tmp1);
 	Fp3_init(&tmp2);
@@ -3585,7 +3760,7 @@ void Sparse_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct
 	Fp3_clear(&F);
 	mpz_clear(cmp);
 }
-void Sparse_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
+void Sparse_type1_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
 	struct Fp6 tmp02,tmp13,tmp45;
 	Fp6_init(&tmp02);
 	Fp6_init(&tmp13);
@@ -3687,9 +3862,500 @@ void Sparse_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
 	Fp18_clear(&t_ans);
 	Fp6_clear(&B_tmp);
 }
+//Sparse type 2 (G2.x.x1.x1,G2.y.x0.x1)
+void Sparse_type2_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){
+	struct Fp18 l_sum;
+	Fp18_init(&l_sum);
+	Fp_set_ui(&l_sum.x0.x0.x0,1);
+
+	struct EFp3 T,EFp_tmp;
+	EFp3_init(&T);
+	EFp3_init(&EFp_tmp);
+
+	struct Fp3 Px_neg;
+	Fp3_init(&Px_neg);
+
+	Fp3_neg(&Px_neg,&P->x);
+
+	mpz_t p3;
+	mpz_init(p3);
+
+	EFp3_set(&T,Q);
+
+	struct Fp18 ltt,ltp;
+	Fp18_init(&ltt);
+	Fp18_init(&ltp);
+
+	int i;
+	// EFp3_printf(Q);
+
+	int r_bit;//bit数
+	r_bit= (int)mpz_sizeinbase(loop,2);
+
+	for(i=r_bit-2;i>=0;i--){
+		if(mpz_tstbit(loop,i)==1){
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+
+			Sparse_type2_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			// EFp3_printf(&T);
+			// Fp18_printf(&ltt);
+			Sparse_type2_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
+			// EFp3_printf(&T);
+			// Fp18_printf(&ltp);
+
+			Fp18_mul(&l_sum,&l_sum,&ltt);
+			Fp18_mul(&l_sum,&l_sum,&ltp);
+		}else{
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+			Sparse_type2_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Fp18_mul(&l_sum,&l_sum,&ltt);
+		}
+	}
+	// EFp3_printf(&T);
+	Fp18_set(ANS,&l_sum);
+
+	Fp18_clear(&l_sum);
+	EFp3_clear(&T);
+	EFp3_clear(&EFp_tmp);
+	Fp3_clear(&Px_neg);
+	mpz_clear(p3);
+	Fp18_clear(&ltt);
+	Fp18_clear(&ltp);
+}
+void Sparse_type2_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){
+	struct Fp18 l_sum;
+	Fp18_init(&l_sum);
+	Fp_set_ui(&l_sum.x0.x0.x0,1);
+
+	struct EFp3 T,EFp_tmp;
+	EFp3_init(&T);
+	EFp3_init(&EFp_tmp);
+
+	mpz_t p3;
+	mpz_init(p3);
+
+	struct Fp18 ltt,ltp;
+	Fp18_init(&ltt);
+	Fp18_init(&ltp);
+
+	int i;
+
+	struct Fp3 Px_neg;
+	Fp3_init(&Px_neg);
+
+	Fp3_neg(&Px_neg,&P->x);
+
+	struct EFp3 Q_neg;
+	EFp3_init(&Q_neg);
+	Fp3_neg(&Q_neg.y,&Q->y);
+	Fp3_set(&Q_neg.x,&Q->x);
+	if(x_bit_length[x_bit]==-1){
+		EFp3_set(&T,&Q_neg);
+	}else{
+		EFp3_set(&T,Q);
+	}
+
+	for(i=x_bit-1;i>=0;i--){
+		switch (x_bit_length[i]){
+			case 0:
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+			Sparse_type2_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Fp18_mul(&l_sum,&l_sum,&ltt);
+
+			break;
+			case 1:
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+
+			Sparse_type2_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Sparse_type2_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
+
+			Fp18_mul(&l_sum,&l_sum,&ltt);
+			Fp18_mul(&l_sum,&l_sum,&ltp);
+			break;
+			case -1:
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+
+			Sparse_type2_DBL_LINE(&ltt,&T,&T,P,&Px_neg);
+			Sparse_type2_ADD_LINE(&ltp,&T,&T,&Q_neg,P,&Px_neg);
+
+			Fp18_mul(&l_sum,&l_sum,&ltt);
+			Fp18_mul(&l_sum,&l_sum,&ltp);
+			break;
+		}
+	}
+
+	mpz_mul_ui(p3,prime,3);
+	EFp3_type2_SCM(&EFp_tmp,Q,p3);
+
+	Sparse_type2_ADD_LINE(&ltp,&T,&T,&EFp_tmp,P,&Px_neg);
+	Fp18_mul(&l_sum,&l_sum,&ltp);
+
+	Fp18_set(ANS,&l_sum);
+
+	// Fp18_random(&l_sum);
+	// struct timeval sps_1,sps_2;
+	//
+	// gettimeofday(&sps_1, NULL);
+	// Sparse_type2_ADD_LINE(&ltp,&T,&T,Q,P,&Px_neg);
+	// gettimeofday(&sps_2, NULL);
+	// sps_add+=((double)(sps_2.tv_sec - sps_1.tv_sec)+ (double)(sps_2.tv_usec-sps_1.tv_usec)*1.0E-6);
+	//
+	// gettimeofday(&sps_1, NULL);
+	// Sparse_type2_DBL_LINE(&ltp,&T,&T,P,&Px_neg);
+	// gettimeofday(&sps_2, NULL);
+	// sps_dbl+=((double)(sps_2.tv_sec - sps_1.tv_sec)+ (double)(sps_2.tv_usec-sps_1.tv_usec)*1.0E-6);
+	//
+	// gettimeofday(&sps_1, NULL);
+	// Sparse_type2_mul(&l_sum,&l_sum,&ltp);
+	// gettimeofday(&sps_2, NULL);
+	// sps_mul+=((double)(sps_2.tv_sec - sps_1.tv_sec)+ (double)(sps_2.tv_usec-sps_1.tv_usec)*1.0E-6);
+
+
+
+	EFp3_clear(&Q_neg);
+	Fp18_clear(&l_sum);
+	EFp3_clear(&T);
+	EFp3_clear(&EFp_tmp);
+	mpz_clear(p3);
+	Fp18_clear(&ltt);
+	Fp18_clear(&ltp);
+	Fp3_clear(&Px_neg);
+}
+void Sparse_type2_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *P,struct EFp3 *Q,struct Fp3 *Qx_neg){
+	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltp;
+	Fp3_init(&tmp1);
+	Fp3_init(&tmp2);
+	Fp3_init(&tmp3);
+	Fp3_init(&tmp4);
+	Fp3_init(&lambda);
+	Fp3_init(&ltp);
+
+	struct Fp18 l_tmp;
+	Fp18_init(&l_tmp);
+
+	struct Fp3 x,y,tmp;
+	Fp3_init(&x);
+	Fp3_init(&y);
+	Fp3_init(&tmp);
+
+	struct EFp3 x3_tmp;
+	EFp3_init(&x3_tmp);
+	struct Fp3 A,B,C,D,E,F;
+	Fp3_init(&A);
+	Fp3_init(&B);
+	Fp3_init(&C);
+	Fp3_init(&D);
+	Fp3_init(&E);
+	Fp3_init(&F);
+
+
+	Fp3_sub(&A,&P->x,&T->x);//xt-xp
+	Fp3_sub(&B,&P->y,&T->y);//yt-yp
+	Fp3_div(&C,&B,&A);//lambda=(yt-tp)/(xt-xp)
+
+	Fp3_add(&D,&T->x,&P->x);
+	Fp3_mul(&tmp1,&C,&C);
+	Fp3_mul_xi_inv(&tmp1,&tmp1);
+	Fp3_sub(&x3_tmp.x,&tmp1,&D);
+
+	Fp3_mul(&tmp2,&C,&T->x);
+	Fp3_sub(&E,&tmp2,&T->y);
+
+	Fp3_mul(&tmp3,&C,&x3_tmp.x);
+	Fp3_sub(&x3_tmp.y,&E,&tmp3);
+
+	Fp3_set(&l_tmp.x0.x0,&Q->y);
+
+	Fp3_set(&l_tmp.x0.x1,&E);
+
+	Fp3_mul_xi_inv(&F,Qx_neg);
+	Fp3_mul(&F,&C,&F);
+	Fp3_set(&l_tmp.x2.x1,&F);
+
+	Fp18_set(l_ANS,&l_tmp);
+	EFp3_set(T_ANS,&x3_tmp);
+
+	Fp3_clear(&tmp1);
+	Fp3_clear(&tmp2);
+	Fp3_clear(&tmp3);
+	Fp3_clear(&tmp4);
+	Fp3_clear(&lambda);
+	Fp3_clear(&ltp);
+	Fp18_clear(&l_tmp);
+	Fp3_clear(&x);
+	Fp3_clear(&y);
+	Fp3_clear(&tmp);
+	EFp3_clear(&x3_tmp);
+	Fp3_clear(&A);
+	Fp3_clear(&B);
+	Fp3_clear(&C);
+	Fp3_clear(&D);
+	Fp3_clear(&E);
+	Fp3_clear(&F);
+}
+void Sparse_type2_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *Q,struct Fp3 *Qx_neg){
+	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltp;
+	Fp3_init(&tmp1);
+	Fp3_init(&tmp2);
+	Fp3_init(&tmp3);
+	Fp3_init(&tmp4);
+	Fp3_init(&lambda);
+	Fp3_init(&ltp);
+
+	struct Fp18 l_tmp;
+	Fp18_init(&l_tmp);
+
+	struct Fp3 x,y,tmp;
+	Fp3_init(&x);
+	Fp3_init(&y);
+	Fp3_init(&tmp);
+
+	struct EFp3 x3_tmp;
+	EFp3_init(&x3_tmp);
+	struct Fp3 A,B,C,D,E,F;
+	Fp3_init(&A);
+	Fp3_init(&B);
+	Fp3_init(&C);
+	Fp3_init(&D);
+	Fp3_init(&E);
+	Fp3_init(&F);
+
+
+	Fp3_add(&A,&T->y,&T->y);//xt-xp
+	Fp3_mul(&B,&T->x,&T->x);
+	Fp3_mul_ui(&B,&B,3);
+	Fp3_div(&C,&B,&A);//lambda=(yt-tp)/(xt-xp)
+
+	Fp3_add(&D,&T->x,&T->x);
+	Fp3_mul(&tmp1,&C,&C);
+	Fp3_mul_xi(&tmp1,&tmp1);
+	Fp3_sub(&x3_tmp.x,&tmp1,&D);
+
+	Fp3_mul(&tmp2,&C,&T->x);
+	Fp3_mul_xi(&tmp2,&tmp2);
+	Fp3_sub(&E,&tmp2,&T->y);
+
+	Fp3_mul(&tmp3,&C,&x3_tmp.x);
+	Fp3_mul_xi(&tmp3,&tmp3);
+	Fp3_sub(&x3_tmp.y,&E,&tmp3);
+
+	Fp3_set(&l_tmp.x0.x0,&Q->y);
+
+	Fp3_set(&l_tmp.x0.x1,&E);
+
+	Fp3_mul(&F,&C,Qx_neg);
+	Fp3_set(&l_tmp.x2.x1,&F);
+
+	Fp18_set(l_ANS,&l_tmp);
+	EFp3_set(T_ANS,&x3_tmp);
+
+	if(T->infity==TRUE){
+		EFp3_set(T_ANS,T);
+		return;
+	}
+	mpz_t cmp;
+	mpz_init(cmp);
+	mpz_set_ui(cmp,0);
+	if(Fp3_cmp_mpz(&T->y,cmp)==0){//P.y==0
+		EFp3_set_infity(T_ANS);
+		return;
+	}
+	Fp3_clear(&tmp1);
+	Fp3_clear(&tmp2);
+	Fp3_clear(&tmp3);
+	Fp3_clear(&tmp4);
+	Fp3_clear(&lambda);
+	Fp3_clear(&ltp);
+	Fp18_clear(&l_tmp);
+	Fp3_clear(&x);
+	Fp3_clear(&y);
+	Fp3_clear(&tmp);
+	EFp3_clear(&x3_tmp);
+	Fp3_clear(&A);
+	Fp3_clear(&B);
+	Fp3_clear(&C);
+	Fp3_clear(&D);
+	Fp3_clear(&E);
+	Fp3_clear(&F);
+	mpz_clear(cmp);
+}
+void Sparse_type2_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
+	struct Fp6 tmp02,tmp13,tmp45;
+	Fp6_init(&tmp02);
+	Fp6_init(&tmp13);
+	Fp6_init(&tmp45);
+
+	struct Fp3 tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
+	Fp3_init(&tmp1);
+	Fp3_init(&tmp2);
+	Fp3_init(&tmp3);
+	Fp3_init(&tmp4);
+	Fp3_init(&tmp5);
+	Fp3_init(&tmp6);
+
+	struct Fp3 theta0,theta1,theta2,theta3,theta4,theta5,theta6,theta7,theta8;
+	Fp3_init(&theta0);
+	Fp3_init(&theta1);
+	Fp3_init(&theta2);
+	Fp3_init(&theta3);
+	Fp3_init(&theta4);
+	Fp3_init(&theta5);
+	Fp3_init(&theta6);
+	Fp3_init(&theta7);
+	Fp3_init(&theta8);
+
+	struct Fp18 t_ans,tmp;;
+	Fp18_init(&t_ans);
+	Fp18_init(&tmp);
+
+	struct Fp6 B_tmp;
+	Fp6_init(&B_tmp);
+
+	Fp3_set(&tmp02.x0,&A->x0.x0);
+	Fp3_set(&tmp02.x1,&A->x2.x0);
+	Fp3_set(&tmp13.x0,&A->x1.x0);
+	Fp3_set(&tmp13.x1,&A->x0.x1);
+	Fp3_set(&tmp45.x0,&A->x1.x1);
+	Fp3_set(&tmp45.x1,&A->x2.x1);
+
+	Fp3_set(&B_tmp.x1,&B->x0.x1);
+	Fp3_set(&B_tmp.x0,&B->x1.x0);
+
+	Fp3_mul(&theta1,&tmp02.x0,&B_tmp.x0);//a*c
+	Fp3_mul(&theta5,&tmp02.x1,&B_tmp.x1);//b*d
+	Fp3_add(&tmp1,&tmp02.x0,&tmp02.x1);//a+b
+	Fp3_add(&tmp2,&B_tmp.x0,&B_tmp.x1);//c+d
+	Fp3_mul(&tmp6,&tmp1,&tmp2);//(a+b)(c+d)
+	Fp3_sub(&tmp3,&tmp6,&theta1);//(a+b)(c+d)-ac-bd
+	Fp3_sub(&theta3,&tmp3,&theta5);
+
+	Fp3_mul(&theta2,&tmp13.x0,&B_tmp.x0);//a*c
+	Fp3_mul(&theta6,&tmp13.x1,&B_tmp.x1);//b*d
+	Fp3_add(&tmp1,&tmp13.x0,&tmp13.x1);//a+b
+	// Fp3_add(&tmp2,&B_tmp.x0,&B_tmp.x1);//c+d
+	Fp3_mul(&tmp6,&tmp1,&tmp2);//(a+b)(c+d)
+	Fp3_sub(&tmp3,&tmp6,&theta2);
+	Fp3_sub(&theta4,&tmp3,&theta6);
+
+	Fp3_mul(&tmp1,&tmp45.x0,&B_tmp.x0);
+	Fp3_add(&theta5,&tmp1,&theta5);
+	Fp3_mul(&tmp1,&tmp45.x1,&B_tmp.x0);
+	Fp3_add(&theta6,&tmp1,&theta6);
+	Fp3_mul(&theta7,&tmp45.x0,&B_tmp.x1);
+	Fp3_mul(&theta8,&tmp45.x1,&B_tmp.x1);
+
+	Fp3_mul_xi(&theta0,&theta6);
+	Fp3_mul_xi(&tmp2,&theta7);
+	Fp3_add(&theta1,&theta1,&tmp2);
+	Fp3_mul_xi(&tmp3,&theta8);
+	Fp3_add(&theta2,&theta2,&tmp3);
+
+	Fp3_set(&t_ans.x0.x0,&theta0);
+	Fp3_set(&t_ans.x1.x0,&theta1);
+	Fp3_set(&t_ans.x2.x0,&theta2);
+	Fp3_set(&t_ans.x0.x1,&theta3);
+	Fp3_set(&t_ans.x1.x1,&theta4);
+	Fp3_set(&t_ans.x2.x1,&theta5);
+
+	Fp18_mul_Fp(&tmp,A,&B->x0.x0.x0);
+	Fp18_add(ANS,&t_ans,&tmp);
+
+	Fp6_clear(&tmp02);
+	Fp6_clear(&tmp13);
+	Fp6_clear(&tmp45);
+	Fp3_clear(&tmp1);
+	Fp3_clear(&tmp2);
+	Fp3_clear(&tmp3);
+	Fp3_clear(&tmp4);
+	Fp3_clear(&tmp5);
+	Fp3_clear(&tmp6);
+	Fp3_clear(&theta0);
+	Fp3_clear(&theta1);
+	Fp3_clear(&theta2);
+	Fp3_clear(&theta3);
+	Fp3_clear(&theta4);
+	Fp3_clear(&theta5);
+	Fp3_clear(&theta6);
+	Fp3_clear(&theta7);
+	Fp3_clear(&theta8);
+	Fp18_clear(&t_ans);
+	Fp6_clear(&B_tmp);
+}
+
 //-----------------------------------------------------------------------------------------
 
-void Pseudo_Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){//Q:G2,P:G1
+void Pseudo_Sparse_Ate_Pairing(struct Fp18 *ANS,struct EFp *G1,struct EFp18 *G2){
+	struct Fp18 t_ans;
+	Fp18_init(&t_ans);
+	struct EFp3 EFp3_G1,EFp3_G2;
+	EFp3_init(&EFp3_G1);
+	EFp3_init(&EFp3_G2);
+	mpz_t tm1;
+	mpz_init(tm1);
+	mpz_sub_ui(tm1,trace,1);
+	int i;
+
+	EFp3_set_EFp(&EFp3_G1,G1);
+	i=EFp3_set_EFp18_Sparse(&EFp3_G2,G2);
+	if(i==1){
+		Pseudo_type1_Miller(&t_ans,&EFp3_G1,&EFp3_G2,tm1);
+	}else if(i==2){
+		Pseudo_type2_Miller(&t_ans,&EFp3_G1,&EFp3_G2,tm1);
+	}else{
+		printf("G2 rational point error\n");
+	}
+
+
+	Final_Exp(&t_ans,&t_ans);
+	Fp18_set(ANS,&t_ans);
+
+	Fp18_clear(&t_ans);
+	mpz_clear(tm1);
+}
+void Pseudo_Sparse_Optimal_Ate_Pairing(struct Fp18 *ANS,struct EFp *G1,struct EFp18 *G2){
+	mpz_t p3,set_3;
+	mpz_init(p3);
+	mpz_init(set_3);
+	mpz_set_ui(set_3,3);
+
+	struct EFp3 EFp3_G1,EFp3_G2;
+	EFp3_init(&EFp3_G1);
+	EFp3_init(&EFp3_G2);
+
+
+	struct Fp18 ltp,Miller_X,Miller_3,t_ans;
+	Fp18_init(&ltp);
+	Fp18_init(&Miller_X);
+	Fp18_init(&Miller_3);
+	Fp18_init(&t_ans);
+	int i;
+
+	EFp3_set_EFp(&EFp3_G1,G1);
+	i=EFp3_set_EFp18_Sparse(&EFp3_G2,G2);
+	if(i==1){
+		Pseudo_type1_Optimal_Miller(&Miller_X,&EFp3_G1,&EFp3_G2,X);
+		Pseudo_type1_Miller(&Miller_3,&EFp3_G1,&EFp3_G2,set_3);
+	}else if(i==2){
+		Pseudo_type2_Optimal_Miller(&Miller_X,&EFp3_G1,&EFp3_G2,X);
+		Pseudo_type2_Miller(&Miller_3,&EFp3_G1,&EFp3_G2,set_3);
+	}else{
+		printf("G2 rational point error\n");
+	}
+
+	Fp18_pow(&Miller_3,&Miller_3,prime);
+	Fp18_mul(&t_ans,&Miller_X,&Miller_3);
+
+	Final_Exp(ANS,&t_ans);
+
+	mpz_clear(p3);
+	Fp18_clear(&ltp);
+	Fp18_clear(&Miller_X);
+	Fp18_clear(&Miller_3);
+	Fp18_clear(&t_ans);
+	mpz_clear(set_3);
+}
+//Sparse type 1 (G2.x.x2.x0,G2.y.x0.x1)
+void Pseudo_type1_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){//Q:G2,P:G1
 	struct Fp18 l_sum;
 	Fp18_init(&l_sum);
 	Fp_set_ui(&l_sum.x0.x0.x0,1);
@@ -3733,24 +4399,24 @@ void Pseudo_Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t r
 	// EFp3_printf(Q);
 
 	int r_bit;//bit数
-	r_bit= (int)mpz_sizeinbase(roop,2);
+	r_bit= (int)mpz_sizeinbase(loop,2);
 
 	for(i=r_bit-2;i>=0;i--){
-		if(mpz_tstbit(roop,i)==1){
+		if(mpz_tstbit(loop,i)==1){
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 
-			Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type1_DBL_LINE(&ltt,&T,&T,&P_map,&L);
 			// EFp3_printf(&T);
-			Pseudo_Sparse_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
+			Pseudo_type1_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
 			// EFp3_printf(&T);
 
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltp);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltp);
 		}else{
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
-			Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type1_DBL_LINE(&ltt,&T,&T,&P_map,&L);
 
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltt);
 		}
 	}
 	// EFp3_printf(&T);
@@ -3771,7 +4437,7 @@ void Pseudo_Sparse_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t r
 	Fp18_clear(&ltt);
 	Fp18_clear(&ltp);
 }
-void Pseudo_Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t roop){//Q:G2,P:G1
+void Pseudo_type1_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){//Q:G2,P:G1
 	struct Fp18 l_sum;
 	Fp18_init(&l_sum);
 	Fp_set_ui(&l_sum.x0.x0.x0,1);
@@ -3810,62 +4476,41 @@ void Pseudo_Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q
 	Fp18_init(&ltt);
 	Fp18_init(&ltp);
 
-	// EFp3_set(&T,&Q_map);
 	int i;
-	// EFp3_printf(Q);
-
-	// int r_bit;//bit数
-	// r_bit= (int)mpz_sizeinbase(roop,2);
-	//
-	// for(i=r_bit-2;i>=0;i--){
-	// 	if(mpz_tstbit(roop,i)==1){
-	// 		Fp18_mul(&l_sum,&l_sum,&l_sum);
-	//
-	// 		Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
-	// 		Pseudo_Sparse_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
-	//
-	// 		Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
-	// 		Pseudo_Sparse_mul(&l_sum,&l_sum,&ltp);
-	// 	}else{
-	// 		Fp18_mul(&l_sum,&l_sum,&l_sum);
-	// 		Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
-	// 		Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
-	// 	}
-	// }
 
 	struct EFp3 Q_neg;
 	EFp3_init(&Q_neg);
 	Fp3_neg(&Q_neg.y,&Q_map.y);
 	Fp3_set(&Q_neg.x,&Q_map.x);
-	if(loop[x_bit]==-1){
+	if(x_bit_length[x_bit]==-1){
 		EFp3_set(&T,&Q_neg);
 	}else{
 		EFp3_set(&T,&Q_map);
 	}
 	for(i=x_bit-1;i>=0;i--){
-		switch (loop[i]){
+		switch (x_bit_length[i]){
 			case 0:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
-			Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type1_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltt);
 			break;
 			case 1:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 
-			Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
-			Pseudo_Sparse_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
+			Pseudo_type1_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type1_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
 
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltp);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltp);
 			break;
 			case -1:
 			Fp18_mul(&l_sum,&l_sum,&l_sum);
 
-			Pseudo_Sparse_DBL_LINE(&ltt,&T,&T,&P_map,&L);
-			Pseudo_Sparse_ADD_LINE(&ltp,&T,&T,&Q_neg,&P_map,&L);
+			Pseudo_type1_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type1_ADD_LINE(&ltp,&T,&T,&Q_neg,&P_map,&L);
 
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltt);
-			Pseudo_Sparse_mul(&l_sum,&l_sum,&ltp);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type1_mul(&l_sum,&l_sum,&ltp);
 			break;
 		}
 	}
@@ -3873,29 +4518,32 @@ void Pseudo_Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q
 	mpz_mul_ui(p3,prime,3);
 	EFp3_SCM(&EFp3_tmp,&Q_map,p3);
 
-	// ltp_q_Sparse(&ltp,&T,&EFp_tmp,P);
-	Pseudo_Sparse_ADD_LINE(&ltp,&T,&T,&EFp3_tmp,&P_map,&L);
+	Pseudo_type1_ADD_LINE(&ltp,&T,&T,&EFp3_tmp,&P_map,&L);
 	Fp18_mul(&l_sum,&l_sum,&ltp);
 
 	Fp18_set(ANS,&l_sum);
+
+
 
 	// Fp18_random(&l_sum);
 	// struct timeval pse_1,pse_2;
 	//
 	// gettimeofday(&pse_1, NULL);
-	// Pseudo_Sparse_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
+	// Pseudo_type1_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
 	// gettimeofday(&pse_2, NULL);
 	// pse_add+=((double)(pse_2.tv_sec - pse_1.tv_sec)+ (double)(pse_2.tv_usec-pse_1.tv_usec)*1.0E-6);
 	//
 	// gettimeofday(&pse_1, NULL);
-	// Sparse_DBL_LINE(&ltp,&T,&T,&P_map,&L);
+	// Sparse_type1_DBL_LINE(&ltp,&T,&T,&P_map,&L);
 	// gettimeofday(&pse_2, NULL);
 	// pse_dbl+=((double)(pse_2.tv_sec - pse_1.tv_sec)+ (double)(pse_2.tv_usec-pse_1.tv_usec)*1.0E-6);
 	//
 	// gettimeofday(&pse_1, NULL);
-	// Pseudo_Sparse_mul(&l_sum,&l_sum,&ltp);
+	// Pseudo_type1_mul(&l_sum,&l_sum,&ltp);
 	// gettimeofday(&pse_2, NULL);
 	// pse_mul+=((double)(pse_2.tv_sec - pse_1.tv_sec)+ (double)(pse_2.tv_usec-pse_1.tv_usec)*1.0E-6);
+
+
 
 	EFp3_clear(&Q_neg);
 	Fp18_clear(&l_sum);
@@ -3913,55 +4561,7 @@ void Pseudo_Sparse_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q
 	Fp18_clear(&ltt);
 	Fp18_clear(&ltp);
 }
-void Pseudo_Sparse_Ate_Pairing(struct Fp18 *ANS,struct EFp3 *G1,struct EFp3 *G2){
-	struct Fp18 t_ans;
-	Fp18_init(&t_ans);
-
-	mpz_t tm1;
-	mpz_init(tm1);
-	mpz_sub_ui(tm1,trace,1);
-
-	Pseudo_Sparse_Miller(&t_ans,G1,G2,tm1);
-	Final_Exp(&t_ans,&t_ans);
-	Fp18_set(ANS,&t_ans);
-
-	Fp18_clear(&t_ans);
-	mpz_clear(tm1);
-}
-void Pseudo_Sparse_Optimal_Ate_Pairing(struct Fp18 *ANS,struct EFp3 *G1,struct EFp3 *G2){
-	mpz_t p3;
-	mpz_init(p3);
-
-	struct Fp18 ltp;
-	Fp18_init(&ltp);
-
-	struct Fp18 Miller_X,Miller_3;
-	Fp18_init(&Miller_X);
-	Fp18_init(&Miller_3);
-
-	struct Fp18 t_ans;
-	Fp18_init(&t_ans);
-	Pseudo_Sparse_Optimal_Miller(&Miller_X,G1,G2,X);
-
-	mpz_t set_3;
-	mpz_init(set_3);
-	mpz_set_ui(set_3,3);
-
-	Pseudo_Sparse_Miller(&Miller_3,G1,G2,set_3);
-	Fp18_pow(&Miller_3,&Miller_3,prime);
-
-	Fp18_mul(&t_ans,&Miller_X,&Miller_3);
-
-	Final_Exp(ANS,&t_ans);
-
-	mpz_clear(p3);
-	Fp18_clear(&ltp);
-	Fp18_clear(&Miller_X);
-	Fp18_clear(&Miller_3);
-	Fp18_clear(&t_ans);
-	mpz_clear(set_3);
-}
-void Pseudo_Sparse_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *P,struct EFp3 *Q,struct Fp3 *L){
+void Pseudo_type1_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *P,struct EFp3 *Q,struct Fp3 *L){
 	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltp;
 	Fp3_init(&tmp1);
 	Fp3_init(&tmp2);
@@ -4049,7 +4649,7 @@ void Pseudo_Sparse_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T
 	Fp3_clear(&D);
 	Fp3_clear(&E);
 }
-void Pseudo_Sparse_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *Q,struct Fp3 *L){
+void Pseudo_type1_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *Q,struct Fp3 *L){
 	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltt;
 	Fp3_init(&tmp1);
 	Fp3_init(&tmp2);
@@ -4128,7 +4728,7 @@ void Pseudo_Sparse_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T
 	Fp3_clear(&D);
 	Fp3_clear(&E);
 }
-void Pseudo_Sparse_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
+void Pseudo_type1_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
 	struct Fp6 tmp02,tmp13,tmp45;
 	Fp6_init(&tmp02);
 	Fp6_init(&tmp13);
@@ -4227,47 +4827,454 @@ void Pseudo_Sparse_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
 	Fp18_clear(&t_ans);
 	Fp6_clear(&B_tmp);
 }
-//-----------------------------------------------------------------------------------------
-void Final_Exp_old2(struct Fp18 *ANS,struct Fp18 *A){
-	mpz_t p18;
-	mpz_init(p18);
+//Sparse type 2 (G2.x.x1.x1,G2.y.x0.x1)
+void Pseudo_type2_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){//Q:G2,P:G1
+	struct Fp18 l_sum;
+	Fp18_init(&l_sum);
+	Fp_set_ui(&l_sum.x0.x0.x0,1);
 
-	mpz_pow_ui(p18,prime,18);
-	mpz_sub_ui(p18,p18,1);
-	mpz_div(p18,p18,order);
+	struct EFp3 T,P_map,Q_map,EFp3_tmp;
+	EFp3_init(&T);
+	EFp3_init(&P_map);
+	EFp3_init(&Q_map);
+	EFp3_init(&EFp3_tmp);
 
-	Fp18_pow(ANS,A,p18);
+	struct Fp3 L,xy,xy_2,y_inv,tmp,y_tmp;
+	Fp3_init(&L);
+	Fp3_init(&xy);
+	Fp3_init(&xy_2);
+	Fp3_init(&y_inv);
+	Fp3_init(&tmp);
+	Fp3_init(&y_tmp);
 
-	mpz_clear(p18);
+	Fp3_invert(&y_inv,&P->y);
+	Fp3_mul(&xy,&P->x,&y_inv);
+
+	Fp3_mul(&xy_2,&xy,&xy);
+	Fp3_mul(&P_map.x,&xy_2,&P->x);
+	Fp3_set(&P_map.y,&P_map.x);
+
+	Fp3_mul(&y_tmp,&xy_2,&xy);
+	Fp3_mul(&Q_map.y,&y_tmp,&Q->y);
+	Fp3_mul(&Q_map.x,&xy_2,&Q->x);
+
+	EFp3_set(&T,&Q_map);
+	Fp3_invert(&L,&P_map.y);
+
+	mpz_t p3;
+	mpz_init(p3);
+
+	struct Fp18 ltt,ltp;
+	Fp18_init(&ltt);
+	Fp18_init(&ltp);
+
+	int i;
+	// EFp3_printf(Q);
+
+	int r_bit;//bit数
+	r_bit= (int)mpz_sizeinbase(loop,2);
+
+	for(i=r_bit-2;i>=0;i--){
+		if(mpz_tstbit(loop,i)==1){
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+
+			Pseudo_type2_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			// EFp3_printf(&T);
+			Pseudo_type2_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
+			// EFp3_printf(&T);
+
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltp);
+		}else{
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+			Pseudo_type2_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltt);
+		}
+	}
+	// EFp3_printf(&T);
+	Fp18_set(ANS,&l_sum);
+
+	Fp18_clear(&l_sum);
+	EFp3_clear(&T);
+	EFp3_clear(&P_map);
+	EFp3_clear(&Q_map);
+	EFp3_clear(&EFp3_tmp);
+	Fp3_clear(&L);
+	Fp3_clear(&xy);
+	Fp3_clear(&xy_2);
+	Fp3_clear(&y_inv);
+	Fp3_clear(&tmp);
+	Fp3_clear(&y_tmp);
+	mpz_clear(p3);
+	Fp18_clear(&ltt);
+	Fp18_clear(&ltp);
 }
-void Final_Exp_old1(struct Fp18 *ANS,struct Fp18 *A){
-	mpz_t tmp_mpz,pow;
-	mpz_init(tmp_mpz);
-	mpz_init(pow);
-	struct Fp18 A_inv,t_ans;
-	Fp18_init(&A_inv);
+void Pseudo_type2_Optimal_Miller(struct Fp18 *ANS,struct EFp3 *P,struct EFp3 *Q,mpz_t loop){//Q:G2,P:G1
+	struct Fp18 l_sum;
+	Fp18_init(&l_sum);
+	Fp_set_ui(&l_sum.x0.x0.x0,1);
+
+	struct EFp3 T,P_map,Q_map,EFp3_tmp;
+	EFp3_init(&T);
+	EFp3_init(&P_map);
+	EFp3_init(&Q_map);
+	EFp3_init(&EFp3_tmp);
+
+	struct Fp3 L,xy,xy_2,y_inv,tmp,y_tmp;
+	Fp3_init(&L);
+	Fp3_init(&xy);
+	Fp3_init(&xy_2);
+	Fp3_init(&y_inv);
+	Fp3_init(&tmp);
+	Fp3_init(&y_tmp);
+
+	Fp3_invert(&y_inv,&P->y);
+	Fp3_mul(&xy,&P->x,&y_inv);
+
+	Fp3_mul(&xy_2,&xy,&xy);
+	Fp3_mul(&P_map.x,&xy_2,&P->x);
+	Fp3_set(&P_map.y,&P_map.x);
+
+	Fp3_mul(&y_tmp,&xy_2,&xy);
+	Fp3_mul(&Q_map.y,&y_tmp,&Q->y);
+	Fp3_mul(&Q_map.x,&xy_2,&Q->x);
+
+	Fp3_invert(&L,&P_map.y);
+
+	mpz_t p3;
+	mpz_init(p3);
+
+	struct Fp18 ltt,ltp;
+	Fp18_init(&ltt);
+	Fp18_init(&ltp);
+
+	int i;
+
+	struct EFp3 Q_neg;
+	EFp3_init(&Q_neg);
+	Fp3_neg(&Q_neg.y,&Q_map.y);
+	Fp3_set(&Q_neg.x,&Q_map.x);
+	if(x_bit_length[x_bit]==-1){
+		EFp3_set(&T,&Q_neg);
+	}else{
+		EFp3_set(&T,&Q_map);
+	}
+	for(i=x_bit-1;i>=0;i--){
+		switch (x_bit_length[i]){
+			case 0:
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+			Pseudo_type2_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltt);
+			break;
+			case 1:
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+
+			Pseudo_type2_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type2_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
+
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltp);
+			break;
+			case -1:
+			Fp18_mul(&l_sum,&l_sum,&l_sum);
+
+			Pseudo_type2_DBL_LINE(&ltt,&T,&T,&P_map,&L);
+			Pseudo_type2_ADD_LINE(&ltp,&T,&T,&Q_neg,&P_map,&L);
+
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltt);
+			Pseudo_type2_mul(&l_sum,&l_sum,&ltp);
+			break;
+		}
+	}
+
+	mpz_mul_ui(p3,prime,3);
+	EFp3_type2_SCM(&EFp3_tmp,&Q_map,p3);
+
+	Pseudo_type2_ADD_LINE(&ltp,&T,&T,&EFp3_tmp,&P_map,&L);
+	Fp18_mul(&l_sum,&l_sum,&ltp);
+
+	Fp18_set(ANS,&l_sum);
+
+	// Fp18_random(&l_sum);
+	// struct timeval pse_1,pse_2;
+	//
+	// gettimeofday(&pse_1, NULL);
+	// Pseudo_type2_ADD_LINE(&ltp,&T,&T,&Q_map,&P_map,&L);
+	// gettimeofday(&pse_2, NULL);
+	// pse_add+=((double)(pse_2.tv_sec - pse_1.tv_sec)+ (double)(pse_2.tv_usec-pse_1.tv_usec)*1.0E-6);
+	//
+	// gettimeofday(&pse_1, NULL);
+	// Sparse_DBL_LINE(&ltp,&T,&T,&P_map,&L);
+	// gettimeofday(&pse_2, NULL);
+	// pse_dbl+=((double)(pse_2.tv_sec - pse_1.tv_sec)+ (double)(pse_2.tv_usec-pse_1.tv_usec)*1.0E-6);
+	//
+	// gettimeofday(&pse_1, NULL);
+	// Pseudo_type2_mul(&l_sum,&l_sum,&ltp);
+	// gettimeofday(&pse_2, NULL);
+	// pse_mul+=((double)(pse_2.tv_sec - pse_1.tv_sec)+ (double)(pse_2.tv_usec-pse_1.tv_usec)*1.0E-6);
+
+	EFp3_clear(&Q_neg);
+	Fp18_clear(&l_sum);
+	EFp3_clear(&T);
+	EFp3_clear(&P_map);
+	EFp3_clear(&Q_map);
+	EFp3_clear(&EFp3_tmp);
+	Fp3_clear(&L);
+	Fp3_clear(&xy);
+	Fp3_clear(&xy_2);
+	Fp3_clear(&y_inv);
+	Fp3_clear(&tmp);
+	Fp3_clear(&y_tmp);
+	mpz_clear(p3);
+	Fp18_clear(&ltt);
+	Fp18_clear(&ltp);
+}
+void Pseudo_type2_ADD_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *P,struct EFp3 *Q,struct Fp3 *L){
+	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltp;
+	Fp3_init(&tmp1);
+	Fp3_init(&tmp2);
+	Fp3_init(&tmp3);
+	Fp3_init(&tmp4);
+	Fp3_init(&lambda);
+	Fp3_init(&ltp);
+
+	struct Fp18 l_tmp;
+	Fp18_init(&l_tmp);
+
+	struct Fp3 x,y,tmp;
+	Fp3_init(&x);
+	Fp3_init(&y);
+	Fp3_init(&tmp);
+
+	struct EFp3 x3_tmp;
+	EFp3_init(&x3_tmp);
+	struct Fp3 A,B,C,D,E;
+	Fp3_init(&A);
+	Fp3_init(&B);
+	Fp3_init(&C);
+	Fp3_init(&D);
+	Fp3_init(&E);
+
+
+	Fp3_sub(&A,&P->x,&T->x);//xt-xp
+	Fp3_sub(&B,&P->y,&T->y);//yt-yp
+	Fp3_div(&C,&B,&A);//lambda=(yt-tp)/(xt-xp)
+
+	Fp3_add(&D,&T->x,&P->x);
+	Fp3_mul(&tmp1,&C,&C);
+	Fp3_mul_xi_inv(&tmp1,&tmp1);
+	Fp3_sub(&x3_tmp.x,&tmp1,&D);
+
+	Fp3_mul(&tmp2,&C,&T->x);
+	Fp3_sub(&E,&tmp2,&T->y);
+
+	Fp3_mul(&tmp3,&C,&x3_tmp.x);
+	Fp3_sub(&x3_tmp.y,&E,&tmp3);
+
+	Fp_set_ui(&l_tmp.x0.x0.x0,1);
+
+	Fp3_mul(&l_tmp.x0.x1,&E,L);
+
+	Fp3_mul_xi_inv(&tmp4,&C);
+	Fp3_neg(&l_tmp.x2.x1,&tmp4);
+
+	Fp18_set(l_ANS,&l_tmp);
+	EFp3_set(T_ANS,&x3_tmp);
+
+	Fp3_clear(&tmp1);
+	Fp3_clear(&tmp2);
+	Fp3_clear(&tmp3);
+	Fp3_clear(&tmp4);
+	Fp3_clear(&lambda);
+	Fp3_clear(&ltp);
+	Fp18_clear(&l_tmp);
+	Fp3_clear(&x);
+	Fp3_clear(&y);
+	Fp3_clear(&tmp);
+	EFp3_clear(&x3_tmp);
+	Fp3_clear(&A);
+	Fp3_clear(&B);
+	Fp3_clear(&C);
+	Fp3_clear(&D);
+	Fp3_clear(&E);
+}
+void Pseudo_type2_DBL_LINE(struct Fp18 *l_ANS,struct EFp3 *T_ANS,struct EFp3 *T,struct EFp3 *Q,struct Fp3 *L){
+	struct Fp3 tmp1,tmp2,tmp3,tmp4,lambda,ltt;
+	Fp3_init(&tmp1);
+	Fp3_init(&tmp2);
+	Fp3_init(&tmp3);
+	Fp3_init(&tmp4);
+	Fp3_init(&lambda);
+	Fp3_init(&ltt);
+
+	struct Fp18 l_tmp;
+	Fp18_init(&l_tmp);
+
+	struct Fp3 x,y,tmp;
+	Fp3_init(&x);
+	Fp3_init(&y);
+	Fp3_init(&tmp);
+
+	struct EFp3 x3_tmp;
+	EFp3_init(&x3_tmp);
+	struct Fp3 A,B,C,D,E;
+	Fp3_init(&A);
+	Fp3_init(&B);
+	Fp3_init(&C);
+	Fp3_init(&D);
+	Fp3_init(&E);
+
+	Fp3_add(&A,&T->y,&T->y);//xt-xp
+	Fp3_mul(&B,&T->x,&T->x);
+	Fp3_mul_ui(&B,&B,3);
+	Fp3_div(&C,&B,&A);//lambda=(yt-tp)/(xt-xp)
+
+	Fp3_add(&D,&T->x,&T->x);
+	Fp3_mul(&tmp1,&C,&C);
+	Fp3_mul_xi(&tmp1,&tmp1);
+	Fp3_sub(&x3_tmp.x,&tmp1,&D);
+
+	Fp3_mul(&tmp2,&C,&T->x);
+	Fp3_mul_xi(&tmp2,&tmp2);
+	Fp3_sub(&E,&tmp2,&T->y);
+
+	Fp3_mul(&tmp3,&C,&x3_tmp.x);
+	Fp3_mul_xi(&tmp3,&tmp3);
+	Fp3_sub(&x3_tmp.y,&E,&tmp3);
+
+	Fp_set_ui(&l_tmp.x0.x0.x0,1);
+
+	Fp3_mul(&l_tmp.x0.x1,&E,L);
+
+	Fp3_neg(&l_tmp.x2.x1,&C);
+	Fp18_set(l_ANS,&l_tmp);
+
+	EFp3_set(T_ANS,&x3_tmp);
+
+	Fp3_clear(&tmp1);
+	Fp3_clear(&tmp2);
+	Fp3_clear(&tmp3);
+	Fp3_clear(&tmp4);
+	Fp3_clear(&lambda);
+	Fp3_clear(&ltt);
+	Fp18_clear(&l_tmp);
+	Fp3_clear(&x);
+	Fp3_clear(&y);
+	Fp3_clear(&tmp);
+	EFp3_clear(&x3_tmp);
+	Fp3_clear(&A);
+	Fp3_clear(&B);
+	Fp3_clear(&C);
+	Fp3_clear(&D);
+	Fp3_clear(&E);
+}
+void Pseudo_type2_mul(struct Fp18 *ANS,struct Fp18 *A,struct Fp18 *B){
+	struct Fp6 tmp02,tmp13,tmp45;
+	Fp6_init(&tmp02);
+	Fp6_init(&tmp13);
+	Fp6_init(&tmp45);
+	Fp3_set(&tmp02.x0,&A->x0.x0);
+	Fp3_set(&tmp02.x1,&A->x2.x0);
+	Fp3_set(&tmp13.x0,&A->x1.x0);
+	Fp3_set(&tmp13.x1,&A->x0.x1);
+	Fp3_set(&tmp45.x0,&A->x1.x1);
+	Fp3_set(&tmp45.x1,&A->x2.x1);
+
+	struct Fp3 tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
+	Fp3_init(&tmp1);
+	Fp3_init(&tmp2);
+	Fp3_init(&tmp3);
+	Fp3_init(&tmp4);
+	Fp3_init(&tmp5);
+	Fp3_init(&tmp6);
+
+	struct Fp3 theta0,theta1,theta2,theta3,theta4,theta5,theta6,theta7,theta8,theta9,theta10;
+	Fp3_init(&theta0);
+	Fp3_init(&theta1);
+	Fp3_init(&theta2);
+	Fp3_init(&theta3);
+	Fp3_init(&theta4);
+	Fp3_init(&theta5);
+	Fp3_init(&theta6);
+	Fp3_init(&theta7);
+	Fp3_init(&theta8);
+	Fp3_init(&theta9);
+	Fp3_init(&theta10);
+
+	struct Fp18 t_ans;
 	Fp18_init(&t_ans);
 
-	Fp18_invert(&A_inv,A);
+	struct Fp6 B_tmp;
+	Fp6_init(&B_tmp);
+	Fp3_set(&B_tmp.x0,&B->x0.x1);
+	Fp3_set(&B_tmp.x1,&B->x2.x1);
 
-	Fp18_frobenius_map(&t_ans,A,9);
-	Fp18_mul(&A_inv,&t_ans,&A_inv);
+	Fp3_mul(&theta3,&tmp02.x0,&B_tmp.x0);//a*c
+	Fp3_mul(&theta7,&tmp02.x1,&B_tmp.x1);//b*d
+	Fp3_add(&tmp1,&tmp02.x0,&tmp02.x1);//a+b
+	Fp3_add(&tmp2,&B_tmp.x0,&B_tmp.x1);//c+d
+	Fp3_mul(&tmp6,&tmp1,&tmp2);//(a+b)(c+d)
+	Fp3_sub(&tmp3,&tmp6,&theta3);//(a+b)(c+d)-ac-bd
+	Fp3_sub(&theta5,&tmp3,&theta7);
 
-	Fp18_frobenius_map(&t_ans,&A_inv,3);
-	Fp18_mul(&t_ans,&t_ans,&A_inv);
+	Fp3_mul(&theta4,&tmp13.x0,&B_tmp.x0);//a*c
+	Fp3_mul(&theta8,&tmp13.x1,&B_tmp.x1);//b*d
+	Fp3_add(&tmp1,&tmp13.x0,&tmp13.x1);//a+b
+	// Fp3_add(&tmp2,&B_tmp.x0,&B_tmp.x1);//c+d
+	Fp3_mul(&tmp6,&tmp1,&tmp2);//(a+b)(c+d)
+	Fp3_sub(&tmp3,&tmp6,&theta4);
+	Fp3_sub(&theta6,&tmp3,&theta8);
 
-	// mpz_set_ui(tmp_mpz,3);
-	// Fp18_pow(&t_ans,&t_ans,tmp_mpz);
-	mpz_pow_ui(tmp_mpz,prime,3);
-	mpz_mul(pow,tmp_mpz,tmp_mpz);
-	mpz_sub(pow,pow,tmp_mpz);
-	mpz_add_ui(pow,pow,1);
-	mpz_div(pow,pow,order);
-	// mpz_out_str(stdout,2,pow);
-	// printf("\n");
+	Fp3_mul(&tmp1,&tmp45.x0,&B_tmp.x0);
+	Fp3_add(&theta7,&tmp1,&theta7);
+	Fp3_mul(&tmp1,&tmp45.x1,&B_tmp.x0);
+	Fp3_add(&theta8,&tmp1,&theta8);
+	Fp3_mul(&theta9,&tmp45.x0,&B_tmp.x1);
+	Fp3_mul(&theta10,&tmp45.x1,&B_tmp.x1);
 
-	Fp18_pow(ANS,&t_ans,pow);
+	Fp3_mul_xi(&theta0,&theta6);
+	Fp3_mul_xi(&theta1,&theta7);
+	Fp3_mul_xi(&theta2,&theta8);
+	Fp3_mul_xi(&tmp4,&theta9);
+	Fp3_add(&theta3,&theta3,&tmp4);
+	Fp3_mul_xi(&tmp5,&theta10);
+	Fp3_add(&theta4,&theta4,&tmp5);
+
+	Fp3_set(&t_ans.x0.x0,&theta0);
+	Fp3_set(&t_ans.x1.x0,&theta1);
+	Fp3_set(&t_ans.x2.x0,&theta2);
+	Fp3_set(&t_ans.x0.x1,&theta3);
+	Fp3_set(&t_ans.x1.x1,&theta4);
+	Fp3_set(&t_ans.x2.x1,&theta5);
+
+	Fp18_add(ANS,&t_ans,A);
+
+	Fp6_clear(&tmp02);
+	Fp6_clear(&tmp13);
+	Fp6_clear(&tmp45);
+	Fp3_clear(&tmp1);
+	Fp3_clear(&tmp2);
+	Fp3_clear(&tmp3);
+	Fp3_clear(&tmp4);
+	Fp3_clear(&tmp5);
+	Fp3_clear(&tmp6);
+	Fp3_clear(&theta0);
+	Fp3_clear(&theta1);
+	Fp3_clear(&theta2);
+	Fp3_clear(&theta3);
+	Fp3_clear(&theta4);
+	Fp3_clear(&theta5);
+	Fp3_clear(&theta6);
+	Fp3_clear(&theta7);
+	Fp3_clear(&theta8);
+	Fp3_clear(&theta9);
+	Fp3_clear(&theta10);
+	Fp18_clear(&t_ans);
+	Fp6_clear(&B_tmp);
 }
+
+//-----------------------------------------------------------------------------------------
 void Final_Exp(struct Fp18 *ANS,struct Fp18 *A){
 	int pattern;
 	int bit_prime;
@@ -4313,10 +5320,8 @@ void Final_Exp(struct Fp18 *ANS,struct Fp18 *A){
 		mpz_tdiv_qr(pow_q,pow_r,pow_q,prime);
 		for(j=0;j<bit_prime;j++){
 			pow_bit_separate[i][j]=mpz_tstbit(pow_r,j);
-			printf("%d",pow_bit_separate[i][j]);
 		}
 		i++;
-		printf("\n");
 	}
 
 	//precomputing
@@ -4363,13 +5368,12 @@ void Final_Exp(struct Fp18 *ANS,struct Fp18 *A){
 }
 
 void check_Pairing(void){
-	struct EFp tmp;
-	EFp_init(&tmp);
+	struct EFp P,R;
+	EFp_init(&P);
+	EFp_init(&R);
 
-	struct EFp18 P,Q,R,S;
-	EFp18_init(&P);
+	struct EFp18 Q,S;
 	EFp18_init(&Q);
-	EFp18_init(&R);
 	EFp18_init(&S);
 
 	struct Fp18 ans,tmp1,tmp2,tmp3;
@@ -4377,12 +5381,6 @@ void check_Pairing(void){
 	Fp18_init(&tmp1);
 	Fp18_init(&tmp2);
 	Fp18_init(&tmp3);
-
-	struct EFp3 P_EFp3,Q_EFp3,R_EFp3,S_EFp3;
-	EFp3_init(&P_EFp3);
-	EFp3_init(&Q_EFp3);
-	EFp3_init(&R_EFp3);
-	EFp3_init(&S_EFp3);
 
 	mpz_t a,b,ab;
 	mpz_init(a);
@@ -4393,7 +5391,7 @@ void check_Pairing(void){
 	mpz_set_ui(b,11);
 	mpz_mul(ab,a,b);
 
-	EFp_random_set(&tmp);
+	EFp_random_set(&P);
 	EFp18_random_set_G2(&Q);
 
 	// mpz_set_str(tmp.x.x0,"1646176220195929079712050957626783481753869858",10);
@@ -4434,46 +5432,41 @@ void check_Pairing(void){
 	// Fp18_printf(&tmp2);
 	//----------------------------------------------------
 	// printf("Ate Pairing\n");
-	// EFp18_set_EFp(&P,&tmp);
-	// // EFp18_random_set_G2(&Q);
-	//
 	// printf("G1=");
-	// EFp18_printf(&P);
+	// EFp_printf(&P);
 	// printf("G2=");
 	// EFp18_printf(&Q);
+	// EFp18_set_EFp(&S,&P);
 	//
-	// Ate_Pairing(&tmp1,&P,&Q);
+	// Ate_Pairing(&tmp1,&S,&Q);
 	//
 	// Fp18_pow(&tmp1,&tmp1,ab);
 	// printf("f^ab=");
 	// Fp18_printf(&tmp1);
 	//
-	// EFp18_SCM(&R,&P,a);
-	// EFp18_SCM(&S,&Q,b);
+	// EFp18_SCM(&S,&S,a);
+	// EFp18_SCM(&Q,&Q,b);
 	//
-	// Ate_Pairing(&tmp2,&R,&S);
+	// Ate_Pairing(&tmp2,&S,&Q);
 	//
 	// printf("f'  =");
 	// Fp18_printf(&tmp2);
 	//----------------------------------------------------
-	// printf("Optimal Ate Pairing\n");
-	// // EFp_random_set(&tmp);
-	// EFp18_set_EFp(&P,&tmp);
-	//
-	// // EFp18_random_set_G2(&Q);
-	//
+	printf("Optimal Ate Pairing\n");
 	// printf("G1=");
-	// EFp18_printf(&P);
+	// EFp_printf(&P);
 	// printf("G2=");
 	// EFp18_printf(&Q);
-	//
-	// Optimal_Ate_Pairing(&tmp1,&P,&Q);
-	//
+
+	Optimal_Ate_Pairing(&tmp1,&P,&Q);
+
 	// Fp18_pow(&tmp1,&tmp1,ab);
-	// printf("f^ab=");
-	// Fp18_printf(&tmp1);
-	// EFp18_SCM(&R,&P,a);
+	printf("f^ab=");
+	Fp18_printf(&tmp1);
+
+	// EFp_SCM(&R,&P,a);
 	// EFp18_SCM(&S,&Q,b);
+	//
 	// Optimal_Ate_Pairing(&tmp2,&R,&S);
 	//
 	// printf("f'  =");
@@ -4504,82 +5497,75 @@ void check_Pairing(void){
 	// printf("f'  =");
 	// Fp18_printf(&tmp2);
 	//----------------------------------------------------
-	// printf("Optimal Ate Pairing Sparse\n");
-	//
+	printf("Optimal Ate Pairing Sparse\n");
+
 	// EFp3_set_EFp(&P_EFp3,&tmp);
 	// EFp3_set_EFp18_Sparse(&Q_EFp3,&Q);
-	// // EFp18_printf(&Q);
-	// //
-	// // printf("G1=");
-	// // EFp3_printf(&P_EFp3);
-	// // printf("G2=");
-	// // EFp3_printf(&Q_EFp3);
-	// //
-	// Sparse_Optimal_Ate_Pairing(&tmp1,&P_EFp3,&Q_EFp3);
+	// EFp18_printf(&Q);
 	//
+	// printf("G1=");
+	// EFp3_printf(&P_EFp3);
+	// printf("G2=");
+	// EFp3_printf(&Q_EFp3);
+	//
+	Sparse_Optimal_Ate_Pairing(&tmp1,&P,&Q);
+
 	// Fp18_pow(&tmp1,&tmp1,ab);
-	// printf("\nf^ab=");
-	// Fp18_printf(&tmp1);
+	printf("\nf^ab=");
+	Fp18_printf(&tmp1);
+
+	// EFp_SCM(&R,&P,a);
+	// EFp18_SCM(&S,&Q,b);
 	//
-	// EFp3_SCM(&R_EFp3,&P_EFp3,a);
-	// EFp3_SCM(&S_EFp3,&Q_EFp3,b);
-	//
-	// Sparse_Optimal_Ate_Pairing(&tmp2,&R_EFp3,&S_EFp3);
+	// Sparse_Optimal_Ate_Pairing(&tmp2,&R,&S);
 	//
 	// printf("f'  =");
 	// Fp18_printf(&tmp2);
 	//----------------------------------------------------
 	// printf("Ate Pairing Pseudo Sparse\n");
 	//
-	// EFp3_set_EFp(&P_EFp3,&tmp);
-	// EFp3_set_EFp18_Sparse(&Q_EFp3,&Q);
-	// // EFp18_printf(&Q);
+	// printf("G1=");
+	// EFp_printf(&P);
+	// printf("G2=");
+	// EFp18_printf(&Q);
 	// //
-	// // printf("G1=");
-	// // EFp3_printf(&P_EFp3);
-	// // printf("G2=");
-	// // EFp3_printf(&Q_EFp3);
-	// //
-	// Pseudo_Sparse_Ate_pairing(&tmp1,&P_EFp3,&Q_EFp3);
+	// Sparse_Optimal_Ate_Pairing(&tmp1,&P,&Q);
 	//
 	// Fp18_pow(&tmp1,&tmp1,ab);
 	// printf("\nf^ab=");
 	// Fp18_printf(&tmp1);
 	//
-	// EFp3_SCM(&R_EFp3,&P_EFp3,a);
-	// EFp3_SCM(&S_EFp3,&Q_EFp3,b);
+	// EFp_SCM(&R,&P,a);
+	// EFp18_SCM(&S,&Q,b);
 	//
-	// Pseudo_Sparse_Ate_pairing(&tmp2,&R_EFp3,&S_EFp3);
+	// Sparse_Optimal_Ate_Pairing(&tmp2,&R,&S);
 	//
 	// printf("f'  =");
 	// Fp18_printf(&tmp2);
+
 	//----------------------------------------------------
 	printf("Optimal Ate Pairing Pseudo Sparse\n");
-
-	EFp3_set_EFp(&P_EFp3,&tmp);
-	EFp3_set_EFp18_Sparse(&Q_EFp3,&Q);
+	//
+	// printf("G1=");
+	// EFp_printf(&P);
+	// printf("G2=");
 	// EFp18_printf(&Q);
+	// //
+	Pseudo_Sparse_Optimal_Ate_Pairing(&tmp1,&P,&Q);
 	//
-	printf("G1=");
-	EFp3_printf(&P_EFp3);
-	printf("G2=");
-	EFp3_printf(&Q_EFp3);
-	//
-	Pseudo_Sparse_Optimal_Ate_Pairing(&tmp1,&P_EFp3,&Q_EFp3);
-
-	Fp18_pow(&tmp1,&tmp1,ab);
+	// Fp18_pow(&tmp1,&tmp1,ab);
 	printf("\nf^ab=");
 	Fp18_printf(&tmp1);
 
-	EFp3_SCM(&R_EFp3,&P_EFp3,a);
-	EFp3_SCM(&S_EFp3,&Q_EFp3,b);
+	// EFp_SCM(&R,&P,a);
+	// EFp18_SCM(&S,&Q,b);
+	//
+	// Pseudo_Sparse_Optimal_Ate_Pairing(&tmp2,&R,&S);
+	//
+	// printf("f'  =");
+	// Fp18_printf(&tmp2);
 
-	Pseudo_Sparse_Optimal_Ate_Pairing(&tmp2,&R_EFp3,&S_EFp3);
-
-	printf("f'  =");
-	Fp18_printf(&tmp2);
-
-	// //----------------------------------------------------
+	// ----------------------------------------------------
 
 	EFp18_clear(&Q);
 	Fp18_clear(&ans);
@@ -4591,33 +5577,29 @@ void check_Pairing(void){
 	mpz_clear(ab);
 }
 void Masure_pairing_time(void){
-	struct EFp tmp;
-	EFp_init(&tmp);
+	struct EFp P;
+	EFp_init(&P);
 
-	struct EFp18 P,Q;
-	EFp18_init(&P);
+	struct EFp18 Q;
 	EFp18_init(&Q);
 
 	struct Fp18 ans,tmp1;
 	Fp18_init(&ans);
 	Fp18_init(&tmp1);
 
-	struct EFp3 P_EFp3,Q_EFp3;
-	EFp3_init(&P_EFp3);
-	EFp3_init(&Q_EFp3);
 
 	int i;
 	int loop=100;
 	// struct timeval opt_1,opt_2;
-	struct timeval sparse_1,sparse_2;
+	// struct timeval sparse_1,sparse_2;
 	// struct timeval pseudo_1,pseudo_2;
-	double opt_sum=0,sparse_sum=0,pseudo_sum=0;
+	// double opt_sum=0,sparse_sum=0,pseudo_sum=0;
 
 	mpz_t set_2;
 	mpz_init(set_2);
 	mpz_set_ui(set_2,2);
 
-	EFp_random_set(&tmp);
+	EFp_random_set(&P);
 	EFp18_random_set_G2(&Q);
 
 	for(i=1;i<=loop;i++){
@@ -4632,7 +5614,7 @@ void Masure_pairing_time(void){
 		// pseudo_sum+=((double)(pseudo_2.tv_sec - pseudo_1.tv_sec)+ (double)(pseudo_2.tv_usec-pseudo_1.tv_usec)*1.0E-6);
 
 
-		EFp_SCM(&tmp,&tmp,set_2);
+		EFp_SCM(&P,&P,set_2);
 		EFp18_SCM(&Q,&Q,set_2);
 		//----------------------------------------------------
 		// // printf("Optimal Ate Pairing\n");
@@ -4650,19 +5632,16 @@ void Masure_pairing_time(void){
 		// EFp3_set_EFp18_Sparse(&Q_EFp3,&Q);
 		//
 		// gettimeofday(&pseudo_1, NULL);
-		// Pseudo_Sparse_Optimal_Ate_pairing(&tmp1,&P_EFp3,&Q_EFp3);
+		Pseudo_Sparse_Optimal_Ate_Pairing(&tmp1,&P,&Q);
 		// gettimeofday(&pseudo_2, NULL);
 		// pseudo_sum+=((double)(pseudo_2.tv_sec - pseudo_1.tv_sec)+ (double)(pseudo_2.tv_usec-pseudo_1.tv_usec)*1.0E-6);
 		//----------------------------------------------------
 		// printf("Optimal Ate Pairing Sparse\n");
 
-		EFp3_set_EFp(&P_EFp3,&tmp);
-		EFp3_set_EFp18_Sparse(&Q_EFp3,&Q);
-
-		gettimeofday(&sparse_1, NULL);
-		Pseudo_Sparse_Optimal_Ate_Pairing(&tmp1,&P_EFp3,&Q_EFp3);
-		gettimeofday(&sparse_2, NULL);
-		sparse_sum+=((double)(sparse_2.tv_sec - sparse_1.tv_sec)+ (double)(sparse_2.tv_usec-sparse_1.tv_usec)*1.0E-6);
+		// gettimeofday(&sparse_1, NULL);
+		Sparse_Optimal_Ate_Pairing(&tmp1,&P,&Q);
+		// gettimeofday(&sparse_2, NULL);
+		// sparse_sum+=((double)(sparse_2.tv_sec - sparse_1.tv_sec)+ (double)(sparse_2.tv_usec-sparse_1.tv_usec)*1.0E-6);
 		//----------------------------------------------------
 		printf("%d\n",i);
 
@@ -4687,32 +5666,26 @@ void Masure_pairing_time(void){
 
 
 
-	printf("opt_miller = %lf\n",(opt_sum/loop));
-	printf("sps_miller = %lf\n",(sparse_sum/loop));
-	printf("pse_miller = %lf\n",(pseudo_sum/loop));
+	// printf("opt_miller = %lf\n",(opt_sum/loop));
+	// printf("sps_miller = %lf\n",(sparse_sum/loop));
+	// printf("pse_miller = %lf\n",(pseudo_sum/loop));
 
 
 
-	// printf("opt_add = %lf\n",(opt_add/loop));
-	// printf("opt_dbl = %lf\n",(opt_dbl/loop));
-	// printf("opt_mul = %lf\n",(opt_mul/loop));
-	// printf("sps_add = %lf\n",(sps_add/loop));
-	// printf("sps_dbl = %lf\n",(sps_dbl/loop));
-	// printf("sps_mul = %lf\n",(sps_mul/loop));
-	// printf("pse_add = %lf\n",(pse_add/loop));
-	// printf("pse_dbl = %lf\n",(pse_dbl/loop));
-	// printf("pse_mul = %lf\n",(pse_mul/loop));
+	printf("opt_add = %lf\n",(opt_add/loop));
+	printf("opt_dbl = %lf\n",(opt_dbl/loop));
+	printf("opt_mul = %lf\n",(opt_mul/loop));
+	printf("sps_add = %lf\n",(sps_add/loop));
+	printf("sps_dbl = %lf\n",(sps_dbl/loop));
+	printf("sps_mul = %lf\n",(sps_mul/loop));
+	printf("pse_add = %lf\n",(pse_add/loop));
+	printf("pse_dbl = %lf\n",(pse_dbl/loop));
+	printf("pse_mul = %lf\n",(pse_mul/loop));
 
 	// printf("time = %lf\n",(double)(t2-t1));
 
-	EFp_clear(&tmp);
-	EFp18_clear(&P);
+	EFp_clear(&P);
 	EFp18_clear(&Q);
 	Fp18_clear(&ans);
 	Fp18_clear(&tmp1);
-	EFp3_clear(&P_EFp3);
-	EFp3_clear(&Q_EFp3);
 }
-// Final_Exp = 0.136406
-// Final_Exp_old1 = 0.565664
-// Final_Exp_old2 = 1.842852
