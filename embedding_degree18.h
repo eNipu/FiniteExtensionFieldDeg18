@@ -1,3 +1,6 @@
+#ifndef _KSS18_H_
+#define _KSS18_H_
+
 #include <stdio.h>
 #include <string.h>
 #include <gmp.h>
@@ -6,7 +9,19 @@
 #include <sys/time.h>
 #define TRUE 1
 #define FALSE 0
+#define x_bit 64
+#define c1 2
 
+char X_bit_binary[x_bit+1];
+
+double opt_sum=0,sparse_sum=0,pseudo_sum=0;
+double opt_dbl=0,opt_add=0,opt_mul=0;
+double sps_dbl=0,sps_add=0,sps_mul=0;
+double pse_dbl=0,pse_add=0,pse_mul=0;
+
+mpz_t X;
+
+mpz_t prime,order,trace,order_EFp,b;
 
 struct Fp{
 	mpz_t x0;
@@ -36,12 +51,8 @@ struct EFp18{
 	struct Fp18 x,y;
 	int infity;
 };
-mpz_t X;
 
-mpz_t prime,order,trace,order_EFp,b;
-
-
-void test();
+void generate_X();
 
 
 void Fp_init(struct Fp *A);
@@ -242,3 +253,5 @@ void Final_Exp(struct Fp18 *ANS,struct Fp18 *A);
 
 void check_Pairing(void);
 void Masure_pairing_time(void);
+
+#endif //_KSS18_H_
