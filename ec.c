@@ -98,7 +98,7 @@ void ecfp_scalar_mul(EcFp *rop, const EcFp *p, const mpz_t scalar) {
     ecfp_init(&res); ecfp_init(&tmp);
     ecfp_set_infinity(&res);
     size_t n = mpz_sizeinbase(scalar, 2);
-    for (ssize_t i = n - 1; i >= 0; --i) {
+    for (int i = (int)n - 1; i >= 0; --i) {
         ecfp_double(&res, &res);
         if (mpz_tstbit(scalar, i)) {
             ecfp_add(&res, &res, p);
@@ -203,7 +203,7 @@ void ecfp3_scalar_mul(EcFp3 *rop, const EcFp3 *p, const mpz_t scalar) {
     ecfp3_init(&res);
     ecfp3_set_infinity(&res);
     size_t n = mpz_sizeinbase(scalar, 2);
-    for (ssize_t i = n - 1; i >= 0; --i) {
+    for (int i = (int)n - 1; i >= 0; --i) {
         ecfp3_double(&res, &res);
         if (mpz_tstbit(scalar, i)) {
             ecfp3_add(&res, &res, p);
@@ -308,7 +308,7 @@ void ecfp18_scalar_mul(EcFp18 *rop, const EcFp18 *p, const mpz_t scalar) {
     ecfp18_init(&res);
     ecfp18_set_infinity(&res);
     size_t n = mpz_sizeinbase(scalar, 2);
-    for (ssize_t i = n - 1; i >= 0; --i) {
+    for (int i = (int)n - 1; i >= 0; --i) {
         ecfp18_double(&res, &res);
         if (mpz_tstbit(scalar, i)) {
             ecfp18_add(&res, &res, p);

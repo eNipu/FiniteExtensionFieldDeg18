@@ -6,7 +6,6 @@
 //  Copyright © 2016 Khandaker Md. Al-Amin. All rights reserved.
 //
 
-#include "embedding_degree18.h"
 #include "fp.h"
 #include "fp3.h"
 #include "fp6.h"

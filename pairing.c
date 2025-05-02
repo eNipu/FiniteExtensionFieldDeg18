@@ -21,7 +21,7 @@ static void miller_loop(Fp18 *f, const EcFp *P, const EcFp3 *Q, const mpz_t loop
 
     // Get binary representation of loop parameter (X)
     size_t n = mpz_sizeinbase(loop_param, 2);
-    for (ssize_t i = n - 2; i >= 0; --i) { // skip MSB
+    for (int i = (int)n - 2; i >= 0; --i) { // skip MSB
         // f = f^2 * l_{R,R}(P)
         fp18_mul(f, f, f);
         Fp18 l;
