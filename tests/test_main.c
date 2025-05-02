@@ -1,4 +1,3 @@
-#include "../fp18_arith.h"
 #include "../parameters.h"
 #include <stdio.h>
 #include <stdlib.h>

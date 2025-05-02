@@ -1,97 +1,106 @@
 #!/bin/bash
 
-# Function to display script usage
-function show_usage {
-    echo "Usage: $0 [OPTION]"
-    echo "Build options:"
-    echo "  --test        Build and run tests"
-    echo "  --bench       Build and run benchmarks"
-    echo "  --clean       Clean build files"
-    echo "  --docs        Generate documentation"
-    echo "  --cmake       Build using CMake"
-    echo "  No argument   Build the main program"
-}
+# Build script for KSS degree 18 pairing implementation
 
-# Clean build directory
-function clean_build {
-    echo "Cleaning build directory..."
+set -e
+
+# Default options
+USE_CMAKE=false
+CLEAN=false
+BUILD_TESTS=false
+BUILD_BENCH=false
+BUILD_DOCS=false
+
+# Parse command line options
+for arg in "$@"
+do
+    case $arg in
+        --cmake)
+        USE_CMAKE=true
+        ;;
+        --clean)
+        CLEAN=true
+        ;;
+        --test)
+        BUILD_TESTS=true
+        ;;
+        --bench)
+        BUILD_BENCH=true
+        ;;
+        --docs)
+        BUILD_DOCS=true
+        ;;
+    esac
+done
+
+# Clean if requested
+if [ "$CLEAN" = true ]; then
+    echo "Cleaning build artifacts..."
+    rm -f *.o pairing_deg18 test_runner benchmark
     rm -rf build
-    mkdir -p build
-}
-
-# Define colors for output
-YELLOW='\033[0;33m'
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-# Check for pkg-config
-if ! command -v pkg-config &> /dev/null; then
-    echo -e "${YELLOW}Warning: pkg-config is not installed. Assuming GMP is available.${NC}"
-    CFLAGS="-lgmp -lm"
-else
-    CFLAGS="$(pkg-config --cflags --libs gmp) -lm"
+    exit 0
 fi
 
-# Common compiler flags
-CFLAGS="-Wall -Wextra -g -O2 $CFLAGS -DDEFINE_GLOBAL_VARIABLES"
-
-# Process arguments
-if [ "$1" == "--test" ]; then
-    echo "Building and running tests..."
-    mkdir -p build
-    gcc $CFLAGS -o build/test_fp tests/test_fp.c parameters.c -I. && \
-    gcc $CFLAGS -o build/test_main tests/test_main.c parameters.c -I. && \
-    echo -e "${GREEN}Running tests...${NC}" && \
-    ./build/test_fp && \
-    ./build/test_main
-    exit $?
-elif [ "$1" == "--bench" ]; then
-    echo "Building and running benchmarks..."
-    mkdir -p build
-    gcc $CFLAGS -o build/benchmark bench/benchmark.c parameters.c -I. && \
-    echo -e "${GREEN}Running benchmarks...${NC}" && \
-    ./build/benchmark
-    exit $?
-elif [ "$1" == "--clean" ]; then
-    clean_build
-    echo -e "${GREEN}Build directory cleaned.${NC}"
-    exit 0
-elif [ "$1" == "--docs" ]; then
+# Build documentation if requested
+if [ "$BUILD_DOCS" = true ]; then
     echo "Generating documentation..."
     doxygen Doxyfile
-    echo -e "${GREEN}Documentation generated in docs/ directory.${NC}"
-    exit $?
-elif [ "$1" == "--cmake" ]; then
+    exit 0
+fi
+
+# Build using CMake if requested
+if [ "$USE_CMAKE" = true ]; then
     echo "Building with CMake..."
     mkdir -p build
     cd build
-    cmake .. && make
-    exit $?
-elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
-    show_usage
+    cmake ..
+    make
+    cd ..
     exit 0
 fi
 
-# Main build process
-echo "Building Finite Extension Field Degree 18 Library..."
-clean_build
+# Standard build process
+echo "Building KSS degree 18 pairing implementation..."
 
-# Compile everything in a single command to prevent multiple definition errors
-echo "Compiling main program..."
-gcc $CFLAGS -o build/fp18_arith \
-    parameters.c \
-    main.c \
-    BN.c \
-    degree18.c \
-    embedding_degree18.c \
-    -I. 
+# Compile parameters module
+echo "- Compiling parameters..."
+gcc -c -g -Wall -Wextra parameters.c -lgmp
 
-status=$?
-if [ $status -eq 0 ]; then
-    echo -e "${GREEN}Build successful. Run ./build/fp18_arith to execute the program.${NC}"
-else
-    echo -e "${RED}Build failed with status $status.${NC}"
+# Compile finite field arithmetic module
+echo "- Compiling finite field arithmetic..."
+gcc -c -g -Wall -Wextra Finite_Field.c -lgmp
+
+# Compile elliptic curve module
+echo "- Compiling elliptic curve arithmetic..."
+gcc -c -g -Wall -Wextra Elliptic_Curve.c -lgmp
+
+# Compile pairing implementation
+echo "- Compiling pairing implementation..."
+gcc -c -g -Wall -Wextra embedding_degree18.c -lgmp
+
+# Compile main program
+echo "- Compiling main program..."
+gcc -c -g -Wall -Wextra main.c -lgmp
+
+# Link everything together
+echo "- Linking..."
+gcc -o pairing_deg18 main.o parameters.o Finite_Field.o Elliptic_Curve.o embedding_degree18.o -lgmp
+
+# Build tests if requested
+if [ "$BUILD_TESTS" = true ]; then
+    echo "Building tests..."
+    gcc -c -g -Wall -Wextra tests/test_main.c -lgmp
+    gcc -c -g -Wall -Wextra tests/test_fp.c -lgmp
+    gcc -o test_runner test_main.o test_fp.o parameters.o Finite_Field.o -lgmp
+    echo "Tests built successfully. Run with: ./test_runner"
 fi
 
-exit $status
+# Build benchmark if requested
+if [ "$BUILD_BENCH" = true ]; then
+    echo "Building benchmarks..."
+    gcc -c -g -Wall -Wextra bench/benchmark.c -lgmp
+    gcc -o benchmark benchmark.o parameters.o Finite_Field.o Elliptic_Curve.o embedding_degree18.o -lgmp
+    echo "Benchmark built successfully. Run with: ./benchmark"
+fi
+
+echo "Build completed successfully."

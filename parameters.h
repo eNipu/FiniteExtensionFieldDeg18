@@ -1,28 +1,43 @@
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <gmp.h>
+#include <time.h>
 
-// Define the EXTERN macro to handle global variable declarations
-#ifdef DEFINE_GLOBAL_VARIABLES
-  #define EXTERN
-#else
-  #define EXTERN extern
-#endif
+// Include the main header file for structure definitions
+#include "embedding_degree18.h"
 
-// Global variables for curve parameters
-EXTERN mpz_t X;
-EXTERN mpz_t prime;
-EXTERN mpz_t order;
-EXTERN mpz_t trace;
-EXTERN mpz_t order_EFp;
-EXTERN mpz_t b;
+// Declaration of global parameters for KSS degree 18 curve
+extern mpz_t X;       // Parameter for the KSS curve
+extern mpz_t prime;   // Field characteristic
+extern mpz_t r_order; // Order of the subgroup
+extern mpz_t t_trace; // Trace of Frobenius
+extern mpz_t r_order_EFp; // Order of EFp
+extern mpz_t b;       // Curve constant: y^2 = x^3 + b
 
-// Common constants
-EXTERN unsigned long int c1;
+// Constants used in the implementation
+extern mpz_t c1_leg;
+extern mpz_t c1_leg_bar;
+extern mpz_t c1_omega;
+extern mpz_t c1_omega_bar;
 
-// Function declarations
-void EFp_set_EC_parameter(void);
-void generate_X(void);
+// Binary representation of X for efficient scalar multiplication
+extern int *X_bit_binary;
+extern int X_bit;
+
+// Optimization counters
+extern int add_count_miller;
+extern int add_count_finalexp;
+extern int sqr_count_miller;
+extern int sqr_count_finalexp;
+extern int inv_count;
+
+// Function to initialize the parameters
+void init_parameters(void);
+
+// Function to generate curve parameters
+void generate_parameters(void);
 
 #endif // PARAMETERS_H
