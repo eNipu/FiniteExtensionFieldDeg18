@@ -1,3 +1,6 @@
+#ifndef BN_H
+#define BN_H
+
 //gcc -I/usr/local/include -L/usr/local/lib -Wall -O3 -o BN2.out BN2.c -lgmp
 
 
@@ -191,3 +194,5 @@ void ltt_q(struct Fp12 *ANS,struct EFp12 *T,struct EFp12 *Q);
 void v2t_q(struct Fp12 *ANS,struct EFp12 *T,struct EFp12 *Q);
 void ltp_q(struct Fp12 *ANS,struct EFp12 *T,struct EFp12 *P,struct EFp12 *Q);
 void vtp_q(struct Fp12 *ANS,struct EFp12 *T,struct EFp12 *Q);
+
+#endif // BN_H

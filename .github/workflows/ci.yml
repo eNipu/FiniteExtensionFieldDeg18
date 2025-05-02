@@ -1,0 +1,29 @@
+name: C CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: gcc:latest
+
+    steps:
+    - name: Install GMP
+      run: |
+        apt-get update && apt-get install -y libgmp-dev
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build with Makefile
+      run: make
+
+    # Add steps for running tests once they are implemented
+    # - name: Run Tests
+    #   run: ./run_tests.sh

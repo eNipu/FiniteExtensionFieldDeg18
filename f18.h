@@ -1,3 +1,6 @@
+#ifndef F18_H
+#define F18_H
+
 //
 //  f18.h
 //  Fp18_Arith
@@ -219,3 +222,5 @@ void Fp6_pow_prev(struct Fp6 *RES,struct Fp6 *A,mpz_t B);
 void Fp6_mul_prev(struct Fp6 *RES,struct Fp6 *A,struct Fp6 *B);
 void Fp6_invert_prev(struct Fp6 *ANS, struct Fp6 *A);
 void Fp18_invert_prev(struct Fp18 *RES, struct Fp18 *A);
+
+#endif // F18_H

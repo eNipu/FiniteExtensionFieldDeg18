@@ -1,5 +1,5 @@
-#ifndef _KSS18_H_
-#define _KSS18_H_
+#ifndef EMBEDDING_DEGREE18_H
+#define EMBEDDING_DEGREE18_H
 
 #include <stdio.h>
 #include <string.h>
@@ -254,4 +254,4 @@ void Final_Exp(struct Fp18 *ANS,struct Fp18 *A);
 void check_Pairing(void);
 void Masure_pairing_time(void);
 
-#endif //_KSS18_H_
+#endif // EMBEDDING_DEGREE18_H

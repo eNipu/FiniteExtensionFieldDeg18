@@ -1,0 +1,30 @@
+# Build artifacts
+*.o
+*.out
+*.a
+*.so
+*.dylib
+build/
+Build/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# VS Code settings
+.vscode/
+
+# macOS files
+.DS_Store
+
+# Documentation / Instructions (as requested)
+Project Requirement Document.md
+.github/copilot.md
+
+# Other
+*.stackdump
+*.gcov
+*.gcda
+*.gcno
