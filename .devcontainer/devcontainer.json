@@ -1,0 +1,32 @@
+{
+	"name": "Finite Extension Field Deg18",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": "true",
+			"username": "vscode",
+			"userUid": "1000",
+			"userGid": "1000",
+			"upgradePackages": "true"
+		},
+		"ghcr.io/devcontainers/features/git:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cmake-tools",
+				"twxs.cmake",
+				"github.copilot"
+			],
+			"settings": {
+				"editor.formatOnSave": true
+			}
+		}
+	},
+	"remoteUser": "vscode",
+	"onCreateCommand": "sudo apt-get update && sudo apt-get install -y libgmp-dev build-essential doxygen"
+}

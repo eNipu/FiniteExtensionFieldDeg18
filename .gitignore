@@ -1,0 +1,34 @@
+# Build directories and outputs
+/build/
+/doc/
+*.o
+*.a
+*.so
+*.dylib
+fp18_arith
+run_tests
+run_benchmarks
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.cmake
+
+# Doxygen generated docs
+/html/
+/latex/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temp files
+*.log
+*.tmp
+
+# System Files
+.DS_Store
+Thumbs.db

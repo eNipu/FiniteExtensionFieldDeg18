@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgmp-dev build-essential doxygen
+
+    - name: Build with Make
+      run: |
+        chmod +x build.sh
+        ./build.sh
+
+    - name: Run tests
+      run: ./build.sh -t
+
+    - name: Run benchmarks
+      run: ./build.sh -b
+    
+    - name: Generate documentation
+      run: ./build.sh -d
+
+  cmake-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgmp-dev build-essential cmake doxygen
+
+    - name: Build with CMake
+      run: |
+        chmod +x build.sh
+        ./build.sh --cmake
+    
+    - name: Run tests with CMake
+      run: ./build.sh --cmake -t
