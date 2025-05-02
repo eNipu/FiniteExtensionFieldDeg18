@@ -1,4 +1,4 @@
-#include "../fp18_arith.h"
+#include "fp.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -21,139 +21,132 @@ int test_passed = 0;
 
 // Test addition in Fp
 void test_fp_add() {
-    struct Fp a, b, result, expected;
-    Fp_init(&a);
-    Fp_init(&b);
-    Fp_init(&result);
-    Fp_init(&expected);
+    Fp a, b, result, expected;
+    fp_init(&a); 
+    fp_init(&b); 
+    fp_init(&result); 
+    fp_init(&expected);
 
     // Test case: a = 123, b = 456, expected = (123 + 456) mod p
-    Fp_set_ui(&a, 123);
-    Fp_set_ui(&b, 456);
+    fp_set_ui(&a, 123);
+    fp_set_ui(&b, 456);
     
     // Calculate expected result
     mpz_t temp;
     mpz_init(temp);
-    mpz_add_ui(temp, a.x0, 456);
-    mpz_mod(temp, temp, prime);
+    mpz_add_ui(temp, a.x, 456);
+    mpz_mod(temp, temp, kss18_p);
     
-    Fp_set_mpz(&expected, temp);
-    Fp_add(&result, &a, &b);
+    fp_set_mpz(&expected, temp);
+    fp_add(&result, &a, &b);
     
-    TEST(Fp_cmp(&result, &expected) == 0, "Fp_add: 123 + 456");
+    TEST(fp_cmp(&result, &expected) == 0, "fp_add: 123 + 456");
     
-    mpz_clear(temp);
-    Fp_clear(&a);
-    Fp_clear(&b);
-    Fp_clear(&result);
-    Fp_clear(&expected);
+    mpz_clear(temp); 
+    fp_clear(&a); 
+    fp_clear(&b); 
+    fp_clear(&result); 
+    fp_clear(&expected);
 }
 
 // Test multiplication in Fp
 void test_fp_mul() {
-    struct Fp a, b, result, expected;
-    Fp_init(&a);
-    Fp_init(&b);
-    Fp_init(&result);
-    Fp_init(&expected);
+    Fp a, b, result, expected;
+    fp_init(&a); 
+    fp_init(&b); 
+    fp_init(&result); 
+    fp_init(&expected);
 
     // Test case: a = 123, b = 456, expected = (123 * 456) mod p
-    Fp_set_ui(&a, 123);
-    Fp_set_ui(&b, 456);
+    fp_set_ui(&a, 123);
+    fp_set_ui(&b, 456);
     
     // Calculate expected result
     mpz_t temp;
     mpz_init(temp);
-    mpz_mul_ui(temp, a.x0, 456);
-    mpz_mod(temp, temp, prime);
+    mpz_mul_ui(temp, a.x, 456);
+    mpz_mod(temp, temp, kss18_p);
     
-    Fp_set_mpz(&expected, temp);
-    Fp_mul(&result, &a, &b);
+    fp_set_mpz(&expected, temp);
+    fp_mul(&result, &a, &b);
     
-    TEST(Fp_cmp(&result, &expected) == 0, "Fp_mul: 123 * 456");
+    TEST(fp_cmp(&result, &expected) == 0, "fp_mul: 123 * 456");
     
-    mpz_clear(temp);
-    Fp_clear(&a);
-    Fp_clear(&b);
-    Fp_clear(&result);
-    Fp_clear(&expected);
+    mpz_clear(temp); 
+    fp_clear(&a); 
+    fp_clear(&b); 
+    fp_clear(&result); 
+    fp_clear(&expected);
 }
 
 // Test inversion in Fp
 void test_fp_inversion() {
-    struct Fp a, inv_a, result;
-    Fp_init(&a);
-    Fp_init(&inv_a);
-    Fp_init(&result);
+    Fp a, inv_a, result, one;
+    fp_init(&a); 
+    fp_init(&inv_a); 
+    fp_init(&result); 
+    fp_init(&one);
 
     // Test a non-zero value
-    Fp_set_ui(&a, 123);
+    fp_set_ui(&a, 123);
     
     // Compute inverse of a
-    Fp_invert(&inv_a, &a);
+    fp_inv(&inv_a, &a);
     
     // Multiply a * inv_a, should be 1
-    Fp_mul(&result, &a, &inv_a);
+    fp_mul(&result, &a, &inv_a);
     
     // Check if result is 1
-    struct Fp one;
-    Fp_init(&one);
-    Fp_set_ui(&one, 1);
+    fp_set_ui(&one, 1);
     
-    TEST(Fp_cmp(&result, &one) == 0, "Fp_invert: a * a^(-1) = 1");
+    TEST(fp_cmp(&result, &one) == 0, "fp_inv: a * a^(-1) = 1");
     
-    Fp_clear(&a);
-    Fp_clear(&inv_a);
-    Fp_clear(&result);
-    Fp_clear(&one);
+    fp_clear(&a); 
+    fp_clear(&inv_a); 
+    fp_clear(&result); 
+    fp_clear(&one);
 }
 
 // Test associativity of addition: (a + b) + c = a + (b + c)
 void test_fp_associativity() {
-    struct Fp a, b, c, left, right, temp1, temp2;
-    Fp_init(&a);
-    Fp_init(&b);
-    Fp_init(&c);
-    Fp_init(&left);
-    Fp_init(&right);
-    Fp_init(&temp1);
-    Fp_init(&temp2);
+    Fp a, b, c, left, right, temp1, temp2;
+    fp_init(&a); 
+    fp_init(&b); 
+    fp_init(&c); 
+    fp_init(&left); 
+    fp_init(&right); 
+    fp_init(&temp1); 
+    fp_init(&temp2);
 
     // Set random values
-    Fp_random(&a);
-    Fp_random(&b);
-    Fp_random(&c);
+    fp_random(&a);
+    fp_random(&b);
+    fp_random(&c);
     
     // Calculate (a + b) + c
-    Fp_add(&temp1, &a, &b);
-    Fp_add(&left, &temp1, &c);
+    fp_add(&temp1, &a, &b); 
+    fp_add(&left, &temp1, &c);
     
     // Calculate a + (b + c)
-    Fp_add(&temp2, &b, &c);
-    Fp_add(&right, &a, &temp2);
+    fp_add(&temp2, &b, &c); 
+    fp_add(&right, &a, &temp2);
     
-    TEST(Fp_cmp(&left, &right) == 0, "Fp_add associativity: (a + b) + c = a + (b + c)");
+    TEST(fp_cmp(&left, &right) == 0, "fp_add associativity: (a + b) + c = a + (b + c)");
     
-    Fp_clear(&a);
-    Fp_clear(&b);
-    Fp_clear(&c);
-    Fp_clear(&left);
-    Fp_clear(&right);
-    Fp_clear(&temp1);
-    Fp_clear(&temp2);
+    fp_clear(&a); 
+    fp_clear(&b); 
+    fp_clear(&c); 
+    fp_clear(&left); 
+    fp_clear(&right); 
+    fp_clear(&temp1); 
+    fp_clear(&temp2);
 }
 
 int main() {
     printf("Running Fp arithmetic tests...\n");
     
     // Initialize parameters
-    init_parameters();
-    
-    // Set the generator value X
-    mpz_set_str(X, "18446893747415302274", 10);
-    
-    // Generate curve parameters based on X
-    generate_parameters();
+    init_kss18_params();
     
     srand(time(NULL));  // Seed for random tests
     
@@ -167,7 +160,7 @@ int main() {
     printf("\nTest summary: %d passed out of %d tests\n", test_passed, test_count);
     
     // Cleanup
-    clear_parameters();
+    clear_kss18_params();
     
     return (test_passed == test_count) ? 0 : 1;  // Return 0 if all tests pass, 1 otherwise
 }

@@ -1,63 +1,41 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -std=c11
-LDFLAGS = -lgmp -lm
+CFLAGS = -std=c11 -Wall -Wextra -Werror -I. -I./tests -I./bench
+LDFLAGS = -lgmp
 
 SRC_DIR = .
 BUILD_DIR = ./build
 TEST_DIR = ./tests
 BENCHMARK_DIR = ./bench
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-SRCS := $(filter-out $(SRC_DIR)/main.c, $(SRCS))
-OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+# Modular source files
+SRCS = fp.c fp3.c fp6.c fp18.c ec.c pairing.c parameters.c main.c
+OBJS = $(SRCS:.c=.o)
 
-TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
-TEST_OBJS = $(TEST_SRCS:$(TEST_DIR)/%.c=$(BUILD_DIR)/%.o)
+TEST_SRCS = tests/test_fp.c tests/test_main.c
+TEST_OBJS = $(TEST_SRCS:.c=.o)
 
-BENCH_SRCS = $(wildcard $(BENCHMARK_DIR)/*.c)
-BENCH_OBJS = $(BENCH_SRCS:$(BENCHMARK_DIR)/%.c=$(BUILD_DIR)/%.o)
+BENCH_SRCS = bench/benchmark.c
+BENCH_OBJS = $(BENCH_SRCS:.c=.o)
 
-MAIN_OBJ = $(BUILD_DIR)/main.o
-EXEC = fp18_arith
-TEST_EXEC = run_tests
-BENCH_EXEC = run_benchmarks
+.PHONY: all clean test bench dirs
 
-.PHONY: all clean test bench docs dirs
-
-all: dirs $(EXEC)
+all: finitefield
 
 dirs:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(TEST_DIR)
 	@mkdir -p $(BENCHMARK_DIR)
 
-$(EXEC): $(MAIN_OBJ) $(OBJS)
+finitefield: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(TEST_EXEC): $(TEST_OBJS) $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+test: finitefield $(TEST_OBJS)
+	$(CC) $(CFLAGS) -o test_fp tests/test_fp.c fp.o fp3.o fp6.o fp18.o ec.o pairing.o parameters.o $(LDFLAGS)
+	$(CC) $(CFLAGS) -o test_main tests/test_main.c fp.o fp3.o fp6.o fp18.o ec.o pairing.o parameters.o $(LDFLAGS)
 
-$(BENCH_EXEC): $(BENCH_OBJS) $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-$(BUILD_DIR)/%.o: $(TEST_DIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-$(BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-test: dirs $(TEST_EXEC)
-	./$(TEST_EXEC)
-
-bench: dirs $(BENCH_EXEC)
-	./$(BENCH_EXEC)
-
-docs:
-	doxygen Doxyfile
+bench: finitefield $(BENCH_OBJS)
+	$(CC) $(CFLAGS) -o bench/benchmark bench/benchmark.c fp.o fp3.o fp6.o fp18.o ec.o pairing.o parameters.o $(LDFLAGS)
 
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -f $(EXEC) $(TEST_EXEC) $(BENCH_EXEC)
+	rm -f *.o finitefield test_fp test_main bench/benchmark

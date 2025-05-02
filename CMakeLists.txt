@@ -59,3 +59,22 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
     )
 endif()
+
+# Additional library and executables
+add_library(finitefield STATIC
+    fp.c fp3.c fp6.c fp18.c ec.c pairing.c parameters.c
+)
+target_include_directories(finitefield PUBLIC .)
+target_link_libraries(finitefield PUBLIC gmp)
+
+add_executable(main main.c)
+target_link_libraries(main PRIVATE finitefield)
+
+add_executable(test_fp tests/test_fp.c)
+target_link_libraries(test_fp PRIVATE finitefield)
+
+add_executable(test_main tests/test_main.c)
+target_link_libraries(test_main PRIVATE finitefield)
+
+add_executable(benchmark bench/benchmark.c)
+target_link_libraries(benchmark PRIVATE finitefield)

@@ -4,106 +4,68 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Global parameters for KSS degree 18 curve
-mpz_t X;       // Parameter for the KSS curve
-mpz_t prime;   // Field characteristic
-mpz_t r_order; // Order of the subgroup
-mpz_t t_trace; // Trace of Frobenius
-mpz_t r_order_EFp; // Order of EFp
-mpz_t b;       // Curve constant: y^2 = x^3 + b
+// Define global GMP variables declared in parameters.h
+mpz_t kss18_p;
+mpz_t kss18_r;
+mpz_t kss18_b;
+mpz_t kss18_t; // Trace of Frobenius (calculated)
+mpz_t kss18_order_efp; // Order of E(Fp) = p + 1 - t (calculated)
 
-// Constants used in the implementation
-mpz_t c1_leg;
-mpz_t c1_leg_bar;
-mpz_t c1_omega;
-mpz_t c1_omega_bar;
-
-// Binary representation of X for efficient scalar multiplication
-int *X_bit_binary = NULL;
-int X_bit;
-
-// Optimization counters
-int add_count_miller = 0;
-int add_count_finalexp = 0;
-int sqr_count_miller = 0;
-int sqr_count_finalexp = 0;
+// Optimization counters (keep for now, might be refactored)
+int fp_add_count = 0;
+int fp_mul_count = 0;
 int inv_count = 0;
 
 /**
- * Initialize parameters for KSS degree 18 curve
+ * Initialize global parameters for KSS18 curve.
+ * Reads p, r, B from defines in parameters.h and calculates t.
  */
-void init_parameters(void) {
-    // Initialize GMP variables
-    mpz_init(X);
-    mpz_init(prime);
-    mpz_init(r_order);
-    mpz_init(t_trace);
-    mpz_init(r_order_EFp);
-    mpz_init(b);
-    
-    // Initialize constants
-    mpz_init(c1_leg);
-    mpz_init(c1_leg_bar);
-    mpz_init(c1_omega);
-    mpz_init(c1_omega_bar);
-    
-    // Initialize counters
-    add_count_miller = 0;
-    add_count_finalexp = 0;
-    sqr_count_miller = 0;
-    sqr_count_finalexp = 0;
+void init_kss18_params(void) {
+    // Initialize p, r, B using the inline function from the header
+    kss18_init_globals();
+
+    // Calculate u from r (or p) to find t
+    // r = (u^6 + 37u^3 + 343) / 343 => 343r = u^6 + 37u^3 + 343
+    // p = (u^8 + 5u^7 + ... + 2401) / 21
+    // t = (u^4 + 16u + 7) / 7
+    // For simplicity, let's hardcode u for now, as deriving it is complex.
+    // u = 2^44 + 2^22 - 2^9 + 2 = 17592190238210
+    mpz_t u, u_pow_4, tmp1, tmp2;
+    mpz_init_set_str(u, "17592190238210", 10);
+    mpz_init(u_pow_4);
+    mpz_init(tmp1);
+    mpz_init(tmp2);
+    mpz_init(kss18_t);
+    mpz_init(kss18_order_efp);
+
+    // Calculate t = (u^4 + 16u + 7) / 7
+    mpz_pow_ui(u_pow_4, u, 4);
+    mpz_mul_ui(tmp1, u, 16);
+    mpz_add(tmp2, u_pow_4, tmp1);
+    mpz_add_ui(tmp2, tmp2, 7);
+    mpz_fdiv_q_ui(kss18_t, tmp2, 7); // Use fdiv for integer division
+
+    // Calculate #E(Fp) = p + 1 - t
+    mpz_add_ui(kss18_order_efp, kss18_p, 1);
+    mpz_sub(kss18_order_efp, kss18_order_efp, kss18_t);
+
+    // Clear temporary variables
+    mpz_clear(u);
+    mpz_clear(u_pow_4);
+    mpz_clear(tmp1);
+    mpz_clear(tmp2);
+
+    // Reset counters
+    fp_add_count = 0;
+    fp_mul_count = 0;
     inv_count = 0;
 }
 
 /**
- * Generate parameters for KSS degree 18 curve
- * 
- * This function sets the specific values for X and other parameters
- * that define the KSS degree 18 curve.
+ * Clear global parameters.
  */
-void generate_parameters(void) {
-    // Set X = 0x10000010100 (example - replace with actual value for KSS curve)
-    mpz_set_str(X, "10000010100", 16);
-    
-    // Calculate prime p
-    mpz_pow_ui(prime, X, 6);
-    mpz_mul_ui(prime, prime, 81);
-    mpz_add_ui(prime, prime, 3);
-    mpz_mul_ui(prime, prime, 7);
-    mpz_sub_ui(prime, prime, 7);
-    
-    // Calculate order r
-    mpz_pow_ui(r_order, X, 4);
-    
-    // Fix the incorrect mpz_sub_ui call
-    mpz_t temp;
-    mpz_init(temp);
-    mpz_pow_ui(temp, X, 2);
-    mpz_sub(r_order, r_order, temp);
-    mpz_clear(temp);
-    
-    mpz_add_ui(r_order, r_order, 1);
-    
-    // Calculate trace t
-    mpz_pow_ui(t_trace, X, 3);
-    mpz_add_ui(t_trace, t_trace, 1);
-    
-    // Set curve constant b
-    mpz_set_ui(b, 3);
-    
-    // Calculate constants for arithmetic
-    mpz_set_ui(c1_leg, 1);
-    mpz_set_ui(c1_leg_bar, 1);
-    mpz_set_ui(c1_omega, 1);
-    mpz_set_ui(c1_omega_bar, 1);
-    
-    // Generate binary representation of X for scalar multiplication
-    X_bit = mpz_sizeinbase(X, 2);
-    X_bit_binary = (int*)malloc(X_bit * sizeof(int));
-    
-    if (X_bit_binary != NULL) {
-        for (int i = 0; i < X_bit; i++) {
-            X_bit_binary[i] = mpz_tstbit(X, i);
-        }
-    }
+void clear_kss18_params(void) {
+    kss18_clear_globals(); // Clears p, r, b using inline function
+    mpz_clear(kss18_t);
+    mpz_clear(kss18_order_efp);
 }

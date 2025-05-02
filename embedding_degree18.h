@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <gmp.h>
 #include <time.h>
+#include "parameters.h"
 
 // Define TRUE and FALSE constants if not already defined
 #ifndef TRUE
@@ -51,13 +52,6 @@ struct EFp18 {
     struct Fp18 p18x, p18y;  // Using the naming convention from f18.h
     int isInfinity;
 };
-
-// Global variables for parameters
-extern mpz_t X;  // variable to find p,r
-extern mpz_t prime, r_order, t_trace, r_order_EFp, b;
-extern mpz_t c1_leg, c1_leg_bar, c1_omega, c1_omega_bar;
-extern int *X_bit_binary;
-extern int X_bit;
 
 // Function declarations for Fp arithmetic
 void Fp_init(struct Fp *A);
@@ -214,7 +208,8 @@ void Pseudo_Sparse_Optimal_Ate_Pairing(struct Fp18 *ANS, struct EFp *G1, struct 
 void Final_Exp(struct Fp18 *ANS, struct Fp18 *A);
 
 // Parameter generation and utility functions
-void generate_parameters(void);
+void init_kss18_params(void);
+void clear_kss18_params(void);
 void check_Pairing(void);
 void Masure_pairing_time(void);
 
