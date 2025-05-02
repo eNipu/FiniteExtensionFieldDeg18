@@ -2,56 +2,68 @@
 
 ## Project Overview
 
-This library implements robust and high-performance arithmetic for Fp^18 using C and GMP. The codebase must be modular, well-documented, and optimized for production use.
+This project implements arithmetic for the finite extension field Fp¹⁸ using C and GMP. Key components include operations in Fp, Fp³, Fp⁶, Fp¹⁸, elliptic curve ops, and pairings.
 
-## Key Technologies and Standards
+## Key Technologies
 
-* **Language:** C (C11)
-* **Big-Integer Backend:** GMP (`mpz_` API)
-* **Build Tools:** GNU Make and CMake
-* **Testing:** Unit tests with a framework (e.g., Check) or custom test harness; benchmarks with Google Benchmark or custom timing.
-* **CI/CD:** GitHub Actions
-* **Containerization:** Dev container for development environment
+- **Language:** C11  
+- **Library:** GMP (`mpz_*` for big integers)  
+- **Build:** Makefile, CMake  
+- **Testing:** Custom C test suite + benchmarks  
+- **CI/CD:** GitHub Actions  
+- **Env:** Linux (dev container)
 
 ## Coding Conventions
 
-* **Naming:** snake\_case for functions/variables, UPPER\_SNAKE\_CASE for macros, StructTypes in PascalCase.
-* **Headers:** Use include guards or `#pragma once`; group related declarations.
-* **Documentation:** Write Doxygen comments for all public functions/types.
-* **Error Handling:** Return error codes; assert on unrecoverable errors.
-* **Memory:** `mpz_init`/`mpz_clear`; use RAII-like patterns where possible.
-* **Performance:** Use Karatsuba, Montgomery reduction; inline critical functions with `static inline`.
+- C11 with `-Wall -Wextra -Werror`.  
+- `snake_case` for functions/variables, `UPPER_SNAKE` for macros.  
+- `mpz_init`/`mpz_clear`; no leaks.  
+- Header guards.  
+- Doxygen comments for public APIs.
 
-## File Structure and Modules
+## GMP Usage
 
-* `src/`
+- Initialize `mpz_t` before use; clear when done.  
+- Use `mpz_add`, `mpz_sub`, `mpz_mul`, `mpz_invert`, `mpz_powm`, `mpz_mod`, etc.
 
-  * `fp.c/h`, `fp3.c/h`, `fp6.c/h`, `fp18.c/h`
-  * `ec.c/h` (elliptic curve)
-  * `pairing.c/h` (optional)
-* `include/` for public headers
-* `tests/` for test cases
-* `bench/` for benchmarks
-* `examples/` for usage demos
-* `tools/` for utility scripts
-* `.devcontainer/` for VSCode dev environment
+## Build and Testing
+
+- Make targets: `make all`, `make test`, `make bench`, `make clean`.  
+- CMake alias: `cmake --build . --target <name>`.  
+- Link with `-lgmp`.
 
 ## Goals for Copilot Assistance
 
-1. **Refactor and Rename**
+1. **Refactoring & Modularization**  
+   - Help refactor existing C code into separate modules (fp, fp3, fp6, fp18, ec, pairing).  
+   - Enforce naming and memory-management best practices.
 
-   * Propose clear module and file names.
-   * Standardize function and variable names per conventions.
-2. **Optimize Implementation**
+2. **Parameter Script**  
+   - Assist in writing a Python tool to compute and verify 128-bit KSS18 parameters:  
+     - Compute *p* and *r* for u = 2^44 + 2^22 − 2^9 + 2.  
+     - Primality tests.  
+     - Emit C header (`kss18_params.h`) with `#define P …`, `#define R …`, `#define B 3`, `#define DELTA 3`.
 
-   * Suggest algorithmic improvements (e.g., Karatsuba splits, Montgomery arithmetic).
-   * Inline and unroll critical loops.
-3. **Build Configuration**
+3. **C Implementation & Verification**  
+   - Generate pure-C code to:  
+     1. Initialize GF(p) constants and do Fp, Fp³, Fp⁶, Fp¹⁸ arithmetic.  
+     2. Define and operate on E: y² = x³ + 3 and its sextic twist.  
+     3. Build GF(p¹⁸) via polynomial X¹⁸ − 3.  
+     4. Implement Optimal Ate pairing.
 
-   * Generate Makefile and CMakeLists.txt with standard targets.
-4. **Testing Setup**
+4. **Test & Benchmark Generation**  
+   - Draft C test vectors using outputs from the Python script.  
+   - Scaffold `test/` files to compare C results against reference data.  
+   - Create `bench/` harnesses for field, EC, and pairing routines.
 
-   * Scaffold unit tests and benchmarks.
-5. **Documentation**
+5. **Documentation & Comments**  
+   - Generate Doxygen skeletons for new modules.  
+   - Write usage examples in README.
 
-   * Generate Doxygen comments and README sections.
+6. **CI Workflow**  
+   - Define GitHub Actions steps to run `make test` and `make bench`.  
+   - Fail on performance regressions (optional).
+
+---
+
+**Note:** Keep the existing tech stack (C, GMP, Make/CMake, GitHub Actions, dev container) unchanged.
