@@ -1,6 +1,10 @@
-#include"embedding_degree18.h"
+#include "embedding_degree18.h"
 #ifndef _Finite_Field_C_
 #define _Finite_Field_C_
+
+// Global variables declared in embedding_degree18.h, implemented in parameters.c
+// Do NOT redefine them here
+unsigned long int c1 = 1;
 
 void Fp_init(struct Fp *A){
 	mpz_init(A->x0);
@@ -10,6 +14,10 @@ void Fp_set(struct Fp *ANS,struct Fp *A){
 }
 void Fp_set_ui(struct Fp *A,signed long int B){
 	mpz_set_ui(A->x0,B);
+}
+void Fp_set_mpz(struct Fp *A, mpz_t B) {
+    mpz_init_set(A->x0, B);
+    mpz_mod(A->x0, A->x0, prime);
 }
 void Fp_random(struct Fp *A){
 	mpz_random(A->x0,10);

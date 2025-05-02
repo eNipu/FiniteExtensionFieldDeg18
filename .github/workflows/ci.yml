@@ -1,29 +1,50 @@
-name: C CI
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    container:
-      image: gcc:latest
-
     steps:
-    - name: Install GMP
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
       run: |
-        apt-get update && apt-get install -y libgmp-dev
+        sudo apt-get update
+        sudo apt-get install -y libgmp-dev build-essential doxygen
 
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - name: Build with Make
+      run: |
+        chmod +x build.sh
+        ./build.sh
 
-    - name: Build with Makefile
-      run: make
+    - name: Run tests
+      run: ./build.sh -t
 
-    # Add steps for running tests once they are implemented
-    # - name: Run Tests
-    #   run: ./run_tests.sh
+    - name: Run benchmarks
+      run: ./build.sh -b
+    
+    - name: Generate documentation
+      run: ./build.sh -d
+
+  cmake-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgmp-dev build-essential cmake doxygen
+
+    - name: Build with CMake
+      run: |
+        chmod +x build.sh
+        ./build.sh --cmake
+    
+    - name: Run tests with CMake
+      run: ./build.sh --cmake -t

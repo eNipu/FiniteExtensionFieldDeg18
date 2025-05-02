@@ -7,22 +7,22 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include "parameters.h" // Include the parameters header
+
 #define TRUE 1
 #define FALSE 0
 #define x_bit 64
-#define c1 2
 
-char X_bit_binary[x_bit+1];
+// X_bit_binary is defined in parameters.h
+EXTERN char X_bit_binary[x_bit+1];
 
-double opt_sum=0,sparse_sum=0,pseudo_sum=0;
-double opt_dbl=0,opt_add=0,opt_mul=0;
-double sps_dbl=0,sps_add=0,sps_mul=0;
-double pse_dbl=0,pse_add=0,pse_mul=0;
+// Global counters for optimizations
+EXTERN double opt_sum, sparse_sum, pseudo_sum;
+EXTERN double opt_dbl, opt_add, opt_mul;
+EXTERN double sps_dbl, sps_add, sps_mul;
+EXTERN double pse_dbl, pse_add, pse_mul;
 
-mpz_t X;
-
-mpz_t prime,order,trace,order_EFp,b;
-
+// Structure definitions
 struct Fp{
 	mpz_t x0;
 };
@@ -52,8 +52,13 @@ struct EFp18{
 	int infity;
 };
 
+// Function declarations
 void generate_X();
 
+// Add the Fp_set_mpz function declaration that's missing
+void Fp_set_mpz(struct Fp *A, mpz_t B);
+// Add the Fp_cmp function declaration that's missing
+int Fp_cmp(struct Fp *A, struct Fp *B);
 
 void Fp_init(struct Fp *A);
 void Fp_set(struct Fp *ANS,struct Fp *A);
@@ -249,7 +254,6 @@ void v2t_q(struct Fp18 *ANS,struct EFp18 *Q,struct EFp18 *R);
 void ltp_q(struct Fp18 *ANS,struct EFp18 *Q,struct EFp18 *R,struct EFp18 *P);
 void vtp_q(struct Fp18 *ANS,struct EFp18 *Q,struct EFp18 *R);
 void Final_Exp(struct Fp18 *ANS,struct Fp18 *A);
-
 
 void check_Pairing(void);
 void Masure_pairing_time(void);

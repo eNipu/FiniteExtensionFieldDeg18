@@ -3,21 +3,26 @@
 
 #include <gmp.h>
 
-// Declare global parameters as extern
-// These will be defined in parameters.c
-extern mpz_t X; // Parameter for generating p and r
-extern mpz_t prime; // Finite field prime p
-extern mpz_t r_order; // Order r of the subgroup G1/G2
-extern mpz_t t_trace; // Trace of Frobenius
-extern mpz_t r_order_EFp; // Order of the elliptic curve group E(Fp) = p + 1 - t
-extern mpz_t b; // Elliptic curve equation y^2 = x^3 + b parameter
+// Define the EXTERN macro to handle global variable declarations
+#ifdef DEFINE_GLOBAL_VARIABLES
+  #define EXTERN
+#else
+  #define EXTERN extern
+#endif
 
-// Frobenius calculation related parameters (if needed, otherwise remove)
-// extern mpz_t c1_leg, c1_leg_bar, c1_omega, c1_omega_bar;
+// Global variables for curve parameters
+EXTERN mpz_t X;
+EXTERN mpz_t prime;
+EXTERN mpz_t order;
+EXTERN mpz_t trace;
+EXTERN mpz_t order_EFp;
+EXTERN mpz_t b;
 
-// Function prototypes for parameter management
-void init_parameters(); // Initialize GMP variables
-void generate_parameters(); // Generate curve parameters based on X
-void clear_parameters(); // Clear GMP variables
+// Common constants
+EXTERN unsigned long int c1;
+
+// Function declarations
+void EFp_set_EC_parameter(void);
+void generate_X(void);
 
 #endif // PARAMETERS_H

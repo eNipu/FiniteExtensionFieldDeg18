@@ -1,111 +1,169 @@
-# Finite Extension Field of Degree 18 (Fp^18)
+# Finite Extension Field Degree 18 Library
 
-This repository provides a C implementation of arithmetic operations within the finite extension field Fp^18, built upon the GMP (GNU Multiple Precision Arithmetic) library. It includes functionalities for base field (Fp), cubic extension (Fp^3), sextic extension (Fp^6), and the full Fp^18 extension. Elliptic curve operations and pairing functionalities might also be included or under development.
+A high-performance C library implementing arithmetic for finite extension fields of degree 18 (`𝔽p18`), elliptic curve operations, and pairing computations. This library is designed for cryptographic applications, particularly for pairing-based cryptography.
 
 ## Features
 
-*   Arithmetic operations (add, sub, mul, inv, pow) for Fp, Fp^3, Fp^6, Fp^18.
-*   Elliptic Curve Arithmetic (ECA, ECD, SCM) over relevant fields.
-*   Pairing computations (specific algorithms may vary).
-*   Utilizes GMP for all large integer calculations.
-*   Build support via Makefile and CMake.
-*   Basic test structure (under development).
+- Prime field (`𝔽p`) arithmetic
+- Extension field arithmetic for `𝔽p3`, `𝔽p6`, and `𝔽p18`
+- Elliptic curve operations over all field levels
+- Optimal Ate pairing implementation
+- Benchmarking tools for performance analysis
+- Comprehensive test suite
+- Efficient implementation using GMP for arbitrary-precision arithmetic
 
-## Prerequisites
+## Tower of Extension Fields
 
-*   **GCC** (or compatible C compiler)
-*   **Make**
-*   **CMake** (optional, alternative build system)
-*   **GMP Library** (including development headers)
-    *   On Debian/Ubuntu: `sudo apt-get update && sudo apt-get install libgmp-dev`
-    *   On Fedora: `sudo dnf install gmp-devel`
-    *   On macOS (using Homebrew): `brew install gmp`
+This library implements a tower of extension fields with the following structure:
+
+1. Base prime field `𝔽p`
+2. Cubic extension `𝔽p3 = 𝔽p[ω]/(ω³ - C₁)` where C₁ = 2
+3. Quadratic extension `𝔽p6 = 𝔽p3[τ]/(τ² - ξ)` where ξ = ω
+4. Cubic extension `𝔽p18 = 𝔽p6[v]/(v³ - τ)`
+
+## Requirements
+
+- GMP (GNU Multiple Precision Arithmetic Library)
+- C compiler with C11 support (GCC or Clang recommended)
+- CMake 3.10+ or Make for building
 
 ## Building
 
-### Using Makefile
+### Using Make
 
-1.  **Compile:**
-    ```bash
-    make
-    ```
-    This will create an executable named `main.out` (or similar, depending on the Makefile).
+```bash
+# Build the library and executable
+make
 
-2.  **Clean:**
-    ```bash
-    make clean
-    ```
+# Run tests
+make test
+
+# Run benchmarks
+make bench
+
+# Generate documentation
+make docs
+
+# Clean build artifacts
+make clean
+```
 
 ### Using CMake
 
-1.  **Configure:**
-    ```bash
-    cmake -S . -B build
-    ```
-
-2.  **Build:**
-    ```bash
-    cmake --build build
-    ```
-    This will create an executable in the `build/` directory.
-
-3.  **Clean:**
-    ```bash
-    rm -rf build
-    ```
-
-## Running
-
-After building, execute the main program:
-
 ```bash
-./main.out
-# or if using CMake
-./build/main_executable # Adjust executable name based on CMakeLists.txt
+# Create build directory
+mkdir -p build && cd build
+
+# Configure and build
+cmake ..
+cmake --build .
+
+# Run tests
+ctest
+
+# Run the executable
+./fp18_arith
 ```
 
-## Testing
+## Development Environment
 
-(Instructions for running tests will be added here once the test suite is implemented.)
+This project includes a DevContainer configuration for Visual Studio Code, providing a consistent development environment with all necessary tools pre-installed.
 
-```bash
-# Example placeholder
-./run_tests.sh
-```
+To use the DevContainer:
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/)
+2. Install the [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
+3. Clone this repository
+4. Open the repository in VS Code
+5. When prompted, click "Reopen in Container"
 
 ## Project Structure
 
+- `fp18_arith.h` - Main header file with all function declarations
+- `Finite_Field.c` - Implementation of finite field arithmetic
+- `Elliptic_Curve.c` - Implementation of elliptic curve operations
+- `embedding_degree18.c` - Implementation of pairing operations
+- `parameters.c` - Parameter management
+- `main.c` - Example usage and demos
+- `tests/` - Test suite
+- `bench/` - Benchmarking tools
+
+## Usage Example
+
+```c
+#include "fp18_arith.h"
+#include <stdio.h>
+
+int main() {
+    // Initialize parameters
+    init_parameters();
+    
+    // Set the generator value X
+    mpz_set_str(X, "18446893747415302274", 10);
+    
+    // Generate curve parameters based on X
+    generate_parameters();
+    
+    // Create two Fp elements
+    struct Fp a, b, c;
+    Fp_init(&a);
+    Fp_init(&b);
+    Fp_init(&c);
+    
+    // Set values
+    Fp_set_ui(&a, 123);
+    Fp_set_ui(&b, 456);
+    
+    // Perform addition
+    Fp_add(&c, &a, &b);
+    
+    // Print result
+    printf("Result of addition: ");
+    Fp_printf(&c);
+    printf("\n");
+    
+    // Clean up
+    Fp_clear(&a);
+    Fp_clear(&b);
+    Fp_clear(&c);
+    clear_parameters();
+    
+    return 0;
+}
 ```
-.
-├── BN.c                  # Big Number related functions (likely using GMP)
-├── BN.h
-├── degree18.c            # Potentially parameter generation or specific degree 18 functions
-├── Elliptic_Curve.c      # Elliptic curve operations
-├── embedding_degree18.c  # Main implementation file or pairing specific code
-├── embedding_degree18.h  # Header for embedding_degree18.c
-├── f18.h                 # Header potentially defining Fp18 structures/functions
-├── Finite_Field.c        # Finite field arithmetic implementations (Fp, Fp3, Fp6, Fp18)
-├── main.c                # Main executable source, example usage
-├── README.md             # This file
-├── LICENSE               # Project license (MIT)
-├── Makefile              # Makefile build script
-├── CMakeLists.txt        # CMake build script
-├── .gitignore            # Git ignore rules
-├── Project Requirement Document.md # Project requirements
-├── .github/              # GitHub specific files
-│   ├── copilot.md        # Instructions for GitHub Copilot
-│   ├── ISSUE_TEMPLATE/
-│   │   └── bug_report.md # Bug report template
-│   └── workflows/
-│       └── ci.yml        # GitHub Actions CI workflow
-└── tests/                # Test suite directory (placeholder)
-    └── test_main.c       # Placeholder test file
+
+## Running Tests
+
+The test suite ensures the correctness of the library's operations:
+
+```bash
+make test
+```
+
+## Performance Benchmarks
+
+The library includes benchmarking tools to measure the performance of various operations:
+
+```bash
+make bench
 ```
 
 ## Contributing
 
-Please refer to the issue tracker and consider creating a bug report or feature request. Pull requests are welcome.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -am 'Add some amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the terms specified in the `LICENSE` file.
+
+## References
+
+- [The GMP Library](https://gmplib.org/)
+- [Pairings for Beginners](https://www.craigcostello.com.au/s/PairingsForBeginners.pdf) by Craig Costello
+- [BN Curves](https://tools.ietf.org/id/draft-kasamatsu-bncurves-01.html)
